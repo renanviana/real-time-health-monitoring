@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS ${table_name} (uuid TEXT PRIMARY KEY, data TEXT, timestamp TIMESTAMP);
