@@ -1,0 +1,70 @@
+services:
+  emqx:
+    image: emqx:5.8.4
+    restart: always
+    container_name: emqx
+    ports:
+      - 1883:1883   # Port MQTT
+      - 8083:8083   # Port SSL
+      - 8883:8883   # Port WS
+      - 8084:8084   # Port WSS
+      - 18083:18083 # Port HTTP Server
+    environment:
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: admin123
+      EMQX_NODE__NAME: foo_emqx@127.0.0.1
+    # volumes:
+    #   - vol-emqx-data:/opt/emqx/data
+    #   - vol-emqx-log:/opt/emqx/log
+    networks:
+      - health_monitoring_network
+  heartbeat:
+    depends_on:
+      - emqx
+    build: iot-devices-simulator
+    container_name: heartbeat
+    command: python3 heartbeat.py
+    networks:
+      - health_monitoring_network
+  kafka:
+    image: apache/kafka:3.7.2
+    container_name: kafka
+    ports:
+      - 9092:9092
+      - 9093:9093
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    networks:
+      - health_monitoring_network
+  cassandra:
+    image: cassandra:5.0.2
+    container_name: cassandra
+    restart: always
+    ports:
+      - 9042:9042
+    environment:
+      CASSANDRA_CLUSTER_NAME: HealthMonitoringCluster
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_RACK: rack1
+    networks:
+      - health_monitoring_network
+networks:
+  health_monitoring_network:
+    driver: bridge
+# volumes:
+#   vol-emqx-data:
+#     name: foo-emqx-data
+#   vol-emqx-log:
+#     name: foo-emqx-log
+#   vol-postgres-data:
+#     name: foo-postgres-data
