@@ -12,15 +12,14 @@ services:
     environment:
       EMQX_DASHBOARD__DEFAULT_PASSWORD: admin123
       EMQX_NODE__NAME: foo_emqx@127.0.0.1
-    # volumes:
-    #   - vol-emqx-data:/opt/emqx/data
-    #   - vol-emqx-log:/opt/emqx/log
     networks:
       - health_monitoring_network
   heartbeat:
     depends_on:
       - emqx
+      - health_monitoring_api
     build: iot-devices-simulator
+    image: heartbeat:latest
     container_name: heartbeat
     command: python3 heartbeat.py
     networks:
@@ -34,16 +33,19 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT_INTERNAL://0.0.0.0:9092,PLAINTEXT_EXTERNAL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_INTERNAL://kafka:9092,PLAINTEXT_EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LISTENER_NAME_INTERNAL: PLAINTEXT_INTERNAL
+      KAFKA_LISTENER_NAME_EXTERNAL: PLAINTEXT_EXTERNAL
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
     networks:
       - health_monitoring_network
   cassandra:
@@ -53,18 +55,53 @@ services:
     ports:
       - 9042:9042
     environment:
+      CASSANDRA_SEEDS: cassandra
+      # CASSANDRA_SKIP_WAIT_FOR_GOSSIP_TO_SETTLE: 0
       CASSANDRA_CLUSTER_NAME: HealthMonitoringCluster
       CASSANDRA_DC: datacenter1
       CASSANDRA_RACK: rack1
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_LISTENER_INTERNAL: cassandra:9042
+      CASSANDRA_LISTENER_EXTERNAL: localhost:9042
+      CASSANDRA_LISTENER_INTERFACES: INTERNAL,EXTERNAL
+      CASSANDRA_AUTO_BOOTSTRAP: false
+      CASSANDRA_SKIP_WAIT_FOR_GOSSIP_TO_SETTLE: 1
+      CASSANDRA_MIGRATION: false
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - health_monitoring_network
+  health_monitoring_broker:
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    build: health-monitoring-broker
+    image: health_monitoring_broker:latest
+    container_name: health_monitoring_broker
+    command: java -jar target/health-monitoring-broker-0.0.1-SNAPSHOT.jar
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    networks:
+      - health_monitoring_network
+  health_monitoring_api:
+    depends_on:
+      health_monitoring_broker:
+        condition: service_healthy
+    build: health-monitoring-api
+    image: health_monitoring_api:latest
+    command: java -jar target/health-monitoring-api-0.0.1-SNAPSHOT.jar
+    container_name: health_monitoring_api
+    ports:
+      - 8080:8080
     networks:
       - health_monitoring_network
 networks:
   health_monitoring_network:
     driver: bridge
-# volumes:
-#   vol-emqx-data:
-#     name: foo-emqx-data
-#   vol-emqx-log:
-#     name: foo-emqx-log
-#   vol-postgres-data:
-#     name: foo-postgres-data

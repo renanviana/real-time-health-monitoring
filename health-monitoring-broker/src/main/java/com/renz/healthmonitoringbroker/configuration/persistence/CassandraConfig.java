@@ -92,7 +92,9 @@ public class CassandraConfig {
             String deviceName = device.getKey();
             String[] deviceIds = device.getValue();
             for (String id : deviceIds) {
-                deviceRepository.save(new Device(id, deviceName));
+                Device deviceEntity = new Device(id, deviceName);
+                deviceRepository.save(deviceEntity);
+                cassandraDevices.add(deviceEntity);
             }
         });
         return cassandraDevices;

@@ -33,5 +33,7 @@ build/
 .vscode/
 
 ### Paho ###
-health-monitoring-broker-tcplocalhost1883
+health-monitoring-broker-tcp*
+
+*.dylib
 
