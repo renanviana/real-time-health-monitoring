@@ -16,17 +16,17 @@ import lombok.extern.slf4j.Slf4j;
 public class GetBrokerMessagesAndPushMessagesToTopicsAndDatabaseImpl 
         implements GetBrokerMessagesAndPushMessagesToTopicsAndDatabase {
 
-    private final IMqttClient mqttClient;
+    private final IMqttClient emqxClient;
     private final DevicePublisher devicePublisher;
     private final Set<String> topicNames;
     private final RegistryRepository registryRepository;
 
     public GetBrokerMessagesAndPushMessagesToTopicsAndDatabaseImpl(
-            IMqttClient mqttClient,
+            IMqttClient emqxClient,
             DevicePublisher devicePublisher,
             Set<String> topicNames,
             RegistryRepository registryRepository) {
-        this.mqttClient = mqttClient;
+        this.emqxClient = emqxClient;
         this.devicePublisher = devicePublisher;
         this.topicNames = topicNames;
         this.registryRepository = registryRepository;
@@ -35,7 +35,7 @@ public class GetBrokerMessagesAndPushMessagesToTopicsAndDatabaseImpl
     public void apply() {
         topicNames.forEach(topicName -> {
             try {
-                mqttClient.subscribe("health/".concat(topicName), (topic, msg) -> {
+                emqxClient.subscribe("health/".concat(topicName), (topic, msg) -> {
                     String payload = new String(msg.getPayload());
                     log.debug("Get message on MQTT topic {} : {}", topicName, payload);
                     devicePublisher.publish(topicName, payload);

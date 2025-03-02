@@ -21,14 +21,14 @@ public class EmqxConfig {
     private Integer timeout;
 
     @Bean
-    public IMqttClient mqttClient() throws MqttException {
-        IMqttClient mqttClient = new MqttClient(brokerUrl, clientId);
+    public IMqttClient emqxClient() throws MqttException {
+        IMqttClient emqxClient = new MqttClient(brokerUrl, clientId);
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(true);
         options.setCleanSession(true);
         options.setConnectionTimeout(timeout);
-        mqttClient.connect(options);
-        return mqttClient;
+        emqxClient.connect(options);
+        return emqxClient;
     }
 
 }
