@@ -20,9 +20,9 @@ public class RestRouterConfig {
     @Bean
     public RouterFunction<ServerResponse> routerFunction() {
         return RouterFunctions.route()
-                .GET("/health", deviceHandler::getDeviceTypes)
-                .GET("/health/{deviceName}", deviceHandler::getDevicesByName)
-                .GET("/health/{deviceName}/{deviceId}", deviceHandler::getRegistersByDeviceNameAndDeviceId)
+                .GET("/device", deviceHandler::getDeviceTypes)
+                .GET("/device/{deviceName}", deviceHandler::getDevicesByName)
+                .GET("/device/{deviceName}/{deviceId}", deviceHandler::getRegistersByDeviceNameAndDeviceId)
                 .build();
     }
 }

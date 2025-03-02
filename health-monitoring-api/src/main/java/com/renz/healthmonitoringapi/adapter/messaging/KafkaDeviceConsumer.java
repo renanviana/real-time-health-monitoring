@@ -54,9 +54,7 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
             endpoint.setBean(this);
             endpoint.setMethod(getProcessMethod());
             endpoint.setMessageHandlerMethodFactory(messageHandlerMethodFactory);
-
             kafkaListenerEndpointRegistry.registerListenerContainer(endpoint, kafkaListenerContainerFactory);
-
             MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(listenerId);
             container.start();
         }

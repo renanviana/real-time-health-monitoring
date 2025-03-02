@@ -16,12 +16,12 @@ public class BeanConfig {
 
     @Bean
     public GetBrokerMessagesAndPushMessagesToTopicsAndDatabase healthMonitoringUseCase(
-            IMqttClient mqttClient,
+            IMqttClient emqxClient,
             DevicePublisher devicePublisher,
             Set<String> topicNames,
             RegistryRepository registryRepository) {
         return new GetBrokerMessagesAndPushMessagesToTopicsAndDatabaseImpl(
-                mqttClient,
+            emqxClient,
                 devicePublisher,
                 topicNames,
                 registryRepository);
