@@ -14,16 +14,6 @@ services:
       EMQX_NODE__NAME: foo_emqx@127.0.0.1
     networks:
       - health_monitoring_network
-  heartbeat:
-    depends_on:
-      - emqx
-      - health_monitoring_api
-    build: iot-devices-simulator
-    image: heartbeat:latest
-    container_name: heartbeat
-    command: python3 heartbeat.py
-    networks:
-      - health_monitoring_network
   kafka:
     image: apache/kafka:3.7.2
     container_name: kafka
@@ -74,14 +64,24 @@ services:
       start_period: 30s
     networks:
       - health_monitoring_network
-  health_monitoring_broker:
+  heartbeat:
     depends_on:
-      cassandra:
-        condition: service_healthy
-    build: health-monitoring-broker
-    image: health_monitoring_broker:latest
-    container_name: health_monitoring_broker
-    command: java -jar target/health-monitoring-broker-0.0.1-SNAPSHOT.jar
+      - emqx
+      - health_monitoring_consumer_api
+    build: iot-devices-simulator
+    image: heartbeat:latest
+    container_name: heartbeat
+    command: python3 heartbeat.py
+    networks:
+      - health_monitoring_network
+  health_monitoring_producer_data:
+    depends_on:
+      - emqx
+      - kafka
+    build: health-monitoring-producer-data
+    image: health_monitoring_producer_data:latest
+    command: java -jar target/health-monitoring-producer-data-0.0.1-SNAPSHOT.jar
+    container_name: health_monitoring_producer_data
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8081/actuator/health"]
       interval: 10s
@@ -90,14 +90,32 @@ services:
       timeout: 5s
     networks:
       - health_monitoring_network
-  health_monitoring_api:
+  health_monitoring_consumer_data:
     depends_on:
-      health_monitoring_broker:
+      cassandra:
         condition: service_healthy
-    build: health-monitoring-api
-    image: health_monitoring_api:latest
-    command: java -jar target/health-monitoring-api-0.0.1-SNAPSHOT.jar
-    container_name: health_monitoring_api
+      health_monitoring_producer_data:
+        condition: service_healthy
+    build: health-monitoring-consumer-data
+    image: health_monitoring_consumer_data:latest
+    command: java -jar target/health-monitoring-consumer-data-0.0.1-SNAPSHOT.jar
+    container_name: health_monitoring_consumer_data
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    networks:
+      - health_monitoring_network
+  health_monitoring_consumer_api:
+    depends_on:
+      health_monitoring_consumer_data:
+        condition: service_healthy
+    build: health-monitoring-consumer-api
+    image: health_monitoring_consumer_api:latest
+    command: java -jar target/health-monitoring-consumer-api-0.0.1-SNAPSHOT.jar
+    container_name: health_monitoring_consumer_api
     ports:
       - 8080:8080
     networks:
