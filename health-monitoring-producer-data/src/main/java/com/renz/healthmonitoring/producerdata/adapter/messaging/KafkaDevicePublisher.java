@@ -4,11 +4,9 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
 
 import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
 
-@Component
 public class KafkaDevicePublisher implements DevicePublisher {
 
     private final KafkaTemplate<String, String> kafkaTemplate;

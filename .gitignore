@@ -2,3 +2,4 @@
 tasks.txt
 
 .DS_Store
+*.dylib
