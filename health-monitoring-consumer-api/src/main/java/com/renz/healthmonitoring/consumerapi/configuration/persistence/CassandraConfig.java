@@ -1,7 +1,6 @@
 package com.renz.healthmonitoring.consumerapi.configuration.persistence;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +24,7 @@ public class CassandraConfig {
     private String keyspace;
 
     @Bean
-    public CqlSession cqlSession(Map<String, String[]> devices) {
+    public CqlSession cqlSession() {
         return CqlSession.builder()
                 .withLocalDatacenter(datacenter)
                 .addContactPoint(new InetSocketAddress(host, port))

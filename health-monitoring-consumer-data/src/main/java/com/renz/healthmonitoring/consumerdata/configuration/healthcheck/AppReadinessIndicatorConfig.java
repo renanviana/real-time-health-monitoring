@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
         "kafkaConsumerConfig",
         "kafkaTopicConfig",
         "cassandraConfig",
-        "devicesConfig",
+        "cassandraDeviceTypesConfig",
         "logConfig",
         "beanConfig" })
 public class AppReadinessIndicatorConfig {
