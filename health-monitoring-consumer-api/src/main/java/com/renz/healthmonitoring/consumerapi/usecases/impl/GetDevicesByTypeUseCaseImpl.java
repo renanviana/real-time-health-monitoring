@@ -5,23 +5,23 @@ import java.util.List;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceResponse;
-import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByNameUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class GetDevicesByNameUseCaseImpl implements GetDevicesByNameUseCase {
+public class GetDevicesByTypeUseCaseImpl implements GetDevicesByTypeUseCase {
 
     private final DeviceRepository deviceRepository;
 
-    public GetDevicesByNameUseCaseImpl(DeviceRepository deviceRepository) {
+    public GetDevicesByTypeUseCaseImpl(DeviceRepository deviceRepository) {
         this.deviceRepository = deviceRepository;
     }
 
     @Override
-    public Mono<List<DeviceResponse>> apply(String name) {
-        Flux<Device> devices = deviceRepository.findByName(name);
+    public Mono<List<DeviceResponse>> apply(String type) {
+        Flux<Device> devices = deviceRepository.findByType(type);
         return devices.map(item -> new DeviceResponse(
-                item.getId(), item.getName())).collectList();
+                item.getId(), item.getType())).collectList();
     }
 }

@@ -18,9 +18,9 @@ import com.renz.healthmonitoring.consumerdata.adapter.messaging.KafkaDeviceConsu
 import com.renz.healthmonitoring.consumerdata.adapter.messaging.KafkaDeviceInformer;
 import com.renz.healthmonitoring.consumerdata.adapter.persistence.CassandraRegistryRepositoryLegacy;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
-import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabase;
+import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabaseUseCase;
 import com.renz.healthmonitoring.consumerdata.usecases.impl.SaveDeviceUseCaseImpl;
-import com.renz.healthmonitoring.consumerdata.usecases.impl.TransferDataFromTopicToDatabaseImpl;
+import com.renz.healthmonitoring.consumerdata.usecases.impl.TransferDataFromTopicToDatabaseUseCaseImpl;
 
 @Configuration
 @DependsOn({
@@ -63,12 +63,12 @@ public class BeanConfig {
 
     @Bean
     @Order(5)
-    public TransferDataFromTopicToDatabase transferDataFromTopicToDatabase(
+    public TransferDataFromTopicToDatabaseUseCase transferDataFromTopicToDatabaseUseCase(
             DeviceConsumer deviceConsumer,
             RegistryRepository registryRepository,
             DeviceInformer deviceInformer,
             SaveDeviceUseCase saveDeviceUseCase) {
-        return new TransferDataFromTopicToDatabaseImpl(
+        return new TransferDataFromTopicToDatabaseUseCaseImpl(
                 deviceConsumer,
                 registryRepository,
                 deviceInformer,

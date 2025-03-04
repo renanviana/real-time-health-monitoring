@@ -10,8 +10,8 @@ public interface DeviceRepository {
     
     Flux<Device> findAll();
     
-    Flux<Device> findByName(String name);
+    Flux<Device> findByType(String name);
 
-    Mono<Device> findByNameAndId(String name, String id);
+    Mono<Device> findByTypeAndId(String name, String id);
 
 }

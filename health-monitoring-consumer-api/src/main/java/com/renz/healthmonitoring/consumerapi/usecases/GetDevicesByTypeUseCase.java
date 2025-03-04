@@ -6,8 +6,8 @@ import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceRespo
 
 import reactor.core.publisher.Mono;
 
-public interface GetDevicesByNameUseCase {
+public interface GetDevicesByTypeUseCase {
     
-    Mono<List<DeviceResponse>> apply(String name);
+    Mono<List<DeviceResponse>> apply(String type);
 
 }

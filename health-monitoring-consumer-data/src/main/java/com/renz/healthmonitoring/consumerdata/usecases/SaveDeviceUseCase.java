@@ -4,6 +4,6 @@ import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 
 public interface SaveDeviceUseCase {
     
-    void save(Device device);
+    void saveIfAbsent(Device device);
 
 }

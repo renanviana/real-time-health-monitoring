@@ -1,18 +1,16 @@
 package com.renz.healthmonitoring.consumerdata.domain.entity.cassandra;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public abstract class CassandraEntityLegacy {
 
     private String tableName;
+    private String uuid;
 
-    @Setter
-    protected String uuid;
-
-    public CassandraEntityLegacy(String tableName) {
+    public CassandraEntityLegacy(String tableName, String uuid) {
         this.tableName = tableName;
+        this.uuid = uuid;
     }
 
 }

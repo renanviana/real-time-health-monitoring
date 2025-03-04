@@ -10,31 +10,31 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceResponse;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceTypeResponse;
-import com.renz.healthmonitoring.consumerapi.usecases.GetDeviceTypesUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByNameUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByDeviceNameAndDeviceIdUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByTypeAndIdUseCase;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class WebFluxDeviceHandler implements DeviceHandler {
 
-    private final GetDeviceTypesUseCase getDeviceTypesUseCase;
-    private final GetDevicesByNameUseCase getDevicesByNameUseCase;
-    private final GetRegistersByDeviceNameAndDeviceIdUseCase getRegistersByDeviceNameAndDeviceIdUseCase;
+    private final GetDevicesUseCase getDevicesUseCase;
+    private final GetDevicesByTypeUseCase getDevicesByTypeUseCase;
+    private final GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase;
 
     public WebFluxDeviceHandler(
-            GetDeviceTypesUseCase getDeviceTypesUseCase,
-            GetDevicesByNameUseCase getDevicesByNameUseCase,
-            GetRegistersByDeviceNameAndDeviceIdUseCase getRegistersByDeviceNameAndDeviceIdUseCase) {
-        this.getDeviceTypesUseCase = getDeviceTypesUseCase;
-        this.getDevicesByNameUseCase = getDevicesByNameUseCase;
-        this.getRegistersByDeviceNameAndDeviceIdUseCase = getRegistersByDeviceNameAndDeviceIdUseCase;
+            GetDevicesUseCase getDevicesUseCase,
+            GetDevicesByTypeUseCase getDevicesByTypeUseCase,
+            GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase) {
+        this.getDevicesUseCase = getDevicesUseCase;
+        this.getDevicesByTypeUseCase = getDevicesByTypeUseCase;
+        this.getRegistersByTypeAndIdUseCase = getRegistersByTypeAndIdUseCase;
     }
 
     @Override
-    public Mono<ServerResponse> getDeviceTypes(ServerRequest request) {
-        Mono<List<DeviceTypeResponse>> results = getDeviceTypesUseCase.apply();
+    public Mono<ServerResponse> getDevices(ServerRequest request) {
+        Mono<List<DeviceTypeResponse>> results = getDevicesUseCase.apply();
         return results.flatMap(items -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(items)))
@@ -42,9 +42,9 @@ public class WebFluxDeviceHandler implements DeviceHandler {
     }
 
     @Override
-    public Mono<ServerResponse> getDevicesByName(ServerRequest request) {
-        String deviceName = request.pathVariable("deviceName");
-        Mono<List<DeviceResponse>> results = getDevicesByNameUseCase.apply(deviceName);
+    public Mono<ServerResponse> getDevicesByType(ServerRequest request) {
+        String type = request.pathVariable("type");
+        Mono<List<DeviceResponse>> results = getDevicesByTypeUseCase.apply(type);
         return results.flatMap(items -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(items)))
@@ -52,10 +52,10 @@ public class WebFluxDeviceHandler implements DeviceHandler {
     }
 
     @Override
-    public Mono<ServerResponse> getRegistersByDeviceNameAndDeviceId(ServerRequest request) {
-        String deviceName = request.pathVariable("deviceName");
-        String deviceId = request.pathVariable("deviceId");
-        Flux<String> results = getRegistersByDeviceNameAndDeviceIdUseCase.apply(deviceName, deviceId);
+    public Mono<ServerResponse> getRegistersByTypeAndId(ServerRequest request) {
+        String type = request.pathVariable("type");
+        String id = request.pathVariable("id");
+        Flux<String> results = getRegistersByTypeAndIdUseCase.apply(type, id);
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(results, String.class)

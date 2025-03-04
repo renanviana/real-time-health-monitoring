@@ -55,11 +55,13 @@ public class BeanConfig {
     public TransferDataFromDeviceToTopicUseCase transferDataFromDeviceToTopicUseCase(
             IMqttClient emqxClient,
             DevicePublisher devicePublisher,
-            CreateTopicUseCase createTopicUseCase) {
+            CreateTopicUseCase createTopicUseCase,
+            DeviceInformer deviceInformer) {
         return new TransferDataFromDeviceToTopicIUseCaseImpl(
                 emqxClient,
                 devicePublisher,
-                createTopicUseCase);
+                createTopicUseCase,
+                deviceInformer);
     }
 
 }

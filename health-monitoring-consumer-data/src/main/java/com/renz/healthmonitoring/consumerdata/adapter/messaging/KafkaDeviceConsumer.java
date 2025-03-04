@@ -1,7 +1,7 @@
 package com.renz.healthmonitoring.consumerdata.adapter.messaging;
 
 import java.lang.reflect.Method;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -36,7 +36,7 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
     }
 
     @Override
-    public void consume(String topic, Consumer<String> processMessageHandler) {
+    public void consume(String topic, BiConsumer<String, String> processMessageHandler) {
         String listenerId = "consumerDataListener-" + topic;
         if (kafkaListenerEndpointRegistry.getListenerContainer(listenerId) == null) {
             MethodKafkaListenerEndpoint<String, String> endpoint = new MethodKafkaListenerEndpoint<>();
@@ -62,14 +62,14 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
     }
 
     public static class MessageProcessor {
-        private final Consumer<String> messageHandler;
+        private final BiConsumer<String, String> messageHandler;
 
-        public MessageProcessor(Consumer<String> messageHandler) {
+        public MessageProcessor(BiConsumer<String, String> messageHandler) {
             this.messageHandler = messageHandler;
         }
 
         public void processMessage(@Header(KafkaHeaders.RECEIVED_KEY) String key, @Payload String message) {
-            messageHandler.accept(message);
+            messageHandler.accept(key, message);
         }
     }
 }

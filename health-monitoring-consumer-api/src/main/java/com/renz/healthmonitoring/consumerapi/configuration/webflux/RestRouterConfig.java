@@ -22,9 +22,9 @@ public class RestRouterConfig {
     @Bean
     public RouterFunction<ServerResponse> routerFunction() {
         return RouterFunctions.route()
-                .GET("/device", deviceHandler::getDeviceTypes)
-                .GET("/device/{deviceName}", deviceHandler::getDevicesByName)
-                .GET("/device/{deviceName}/{deviceId}", deviceHandler::getRegistersByDeviceNameAndDeviceId)
+                .GET("/devices", deviceHandler::getDevices)
+                .GET("/devices/{type}", deviceHandler::getDevicesByType)
+                .GET("/devices/{type}/{id}", deviceHandler::getRegistersByTypeAndId)
                 .build();
     }
 }

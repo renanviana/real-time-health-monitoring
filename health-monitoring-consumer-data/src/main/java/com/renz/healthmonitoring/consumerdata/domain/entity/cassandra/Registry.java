@@ -10,8 +10,8 @@ public class Registry extends CassandraEntityLegacy {
     private String data;
     private Long timestamp;
 
-    public Registry(String tableName, String data) {
-        super(tableName);
+    public Registry(String tableName, String uuid, String data) {
+        super("t_".concat(tableName).replace("-", "_"), uuid);
         this.data = data;
     }
 

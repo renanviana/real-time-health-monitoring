@@ -16,10 +16,11 @@ public class SaveDeviceUseCaseImpl implements SaveDeviceUseCase {
     }
 
     @Override
-    public void save(Device device) {
+    public void saveIfAbsent(Device device) {
         if (deviceRepository.findById(device.getId()).isPresent()) {
             return;
         }
+        device.setType(device.getType().replaceAll("^\"|\"$", ""));
         deviceRepository.save(device);
         log.info("Device saved: {}", device);
     }

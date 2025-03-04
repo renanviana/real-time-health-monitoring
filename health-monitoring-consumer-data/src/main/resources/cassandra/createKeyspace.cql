@@ -5,8 +5,8 @@ CREATE KEYSPACE IF NOT EXISTS health_monitoring WITH replication = {'class': 'Si
 USE health_monitoring;
 
 -- CREATE DEVICES TABLE
-CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, name TEXT);
+CREATE TABLE IF NOT EXISTS devices (id TEXT PRIMARY KEY, type TEXT);
 
 -- CREATE INDEXES
-CREATE INDEX IF NOT EXISTS ON devices (name);
+CREATE INDEX IF NOT EXISTS ON devices (type);
 

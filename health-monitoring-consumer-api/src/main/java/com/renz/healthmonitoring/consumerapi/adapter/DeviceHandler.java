@@ -7,10 +7,10 @@ import reactor.core.publisher.Mono;
 
 public interface DeviceHandler {
     
-    Mono<ServerResponse> getDeviceTypes(ServerRequest request);
+    Mono<ServerResponse> getDevices(ServerRequest request);
 
-    Mono<ServerResponse> getDevicesByName(ServerRequest request);
+    Mono<ServerResponse> getDevicesByType(ServerRequest request);
 
-    Mono<ServerResponse> getRegistersByDeviceNameAndDeviceId(ServerRequest request);
+    Mono<ServerResponse> getRegistersByTypeAndId(ServerRequest request);
     
 }

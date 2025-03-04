@@ -13,12 +13,12 @@ import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerapi.adapter.messaging.KafkaDeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.webflux.WebFluxDeviceHandler;
-import com.renz.healthmonitoring.consumerapi.usecases.GetDeviceTypesUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByNameUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByDeviceNameAndDeviceIdUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDeviceTypesUseCaseImpl;
-import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesByNameUseCaseImpl;
-import com.renz.healthmonitoring.consumerapi.usecases.impl.GetRegistersByDeviceNameAndDeviceIdUseCaseImpl;
+import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByTypeAndIdUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesUseCaseImpl;
+import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesByTypeUseCaseImpl;
+import com.renz.healthmonitoring.consumerapi.usecases.impl.GetRegistersByTypeAndIdUseCaseImpl;
 
 @Configuration
 @DependsOn({
@@ -42,31 +42,33 @@ public class BeanConfig {
 
     @Bean
     @Order(2)
-    public GetDeviceTypesUseCase getDeviceDataUseCase(DeviceRepository deviceRepository) {
-        return new GetDeviceTypesUseCaseImpl(deviceRepository);
+    public GetDevicesUseCase getDevicesUseCase(DeviceRepository deviceRepository) {
+        return new GetDevicesUseCaseImpl(deviceRepository);
     }
 
     @Bean
     @Order(3)
-    public GetDevicesByNameUseCase getDevicesByNameUseCase(DeviceRepository deviceRepository) {
-        return new GetDevicesByNameUseCaseImpl(deviceRepository);
+    public GetDevicesByTypeUseCase getDevicesByTypeUseCase(DeviceRepository deviceRepository) {
+        return new GetDevicesByTypeUseCaseImpl(deviceRepository);
     }
 
     @Bean
     @Order(4)
-    public GetRegistersByDeviceNameAndDeviceIdUseCase getRegistersByDeviceNameAndDeviceIdUseCase(
+    public GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase(
             DeviceConsumer deviceConsumer) {
-        return new GetRegistersByDeviceNameAndDeviceIdUseCaseImpl(deviceConsumer);
+        return new GetRegistersByTypeAndIdUseCaseImpl(deviceConsumer);
     }
 
     @Bean
     @Order(5)
     public DeviceHandler deviceHandler(
-            GetDeviceTypesUseCase getDeviceTypesUseCase,
-            GetDevicesByNameUseCase getDevicesByNameUseCase,
-            GetRegistersByDeviceNameAndDeviceIdUseCase getRegistersByDeviceNameAndDeviceIdUseCase) {
-        return new WebFluxDeviceHandler(getDeviceTypesUseCase, getDevicesByNameUseCase,
-                getRegistersByDeviceNameAndDeviceIdUseCase);
+            GetDevicesUseCase getDevicesUseCase,
+            GetDevicesByTypeUseCase getDevicesByTypeUseCase,
+            GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase) {
+        return new WebFluxDeviceHandler(
+                getDevicesUseCase,
+                getDevicesByTypeUseCase,
+                getRegistersByTypeAndIdUseCase);
     }
 
 }

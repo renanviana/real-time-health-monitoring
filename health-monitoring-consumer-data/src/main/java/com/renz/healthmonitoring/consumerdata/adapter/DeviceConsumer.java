@@ -1,9 +1,9 @@
 package com.renz.healthmonitoring.consumerdata.adapter;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public interface DeviceConsumer {
 
-    void consume(String topic, Consumer<String> processMessageHandler);
+    void consume(String topic, BiConsumer<String, String> processMessageHandler);
     
 }

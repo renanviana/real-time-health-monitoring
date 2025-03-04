@@ -6,15 +6,17 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Table("devices")
 @AllArgsConstructor
+@ToString
 public class Device {
     
     @Id
     private String id;
-    private String name;
+    private String type;
 
 }

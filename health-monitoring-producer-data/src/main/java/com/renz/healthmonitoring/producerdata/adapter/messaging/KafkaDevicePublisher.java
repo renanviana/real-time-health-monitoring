@@ -1,7 +1,5 @@
 package com.renz.healthmonitoring.producerdata.adapter.messaging;
 
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 
@@ -17,8 +15,8 @@ public class KafkaDevicePublisher implements DevicePublisher {
     }
 
     @Override
-    public void publish(String topic, String value) {
-        kafkaTemplate.send(topic, UUID.randomUUID().toString(), value);
+    public void publish(String topic, String key, String value) {
+        kafkaTemplate.send(topic, key, value);
     }
 
 }

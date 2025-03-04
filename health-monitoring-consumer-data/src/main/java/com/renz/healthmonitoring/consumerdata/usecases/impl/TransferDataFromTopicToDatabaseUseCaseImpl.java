@@ -12,12 +12,14 @@ import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
-import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabase;
+import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabaseUseCase;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class TransferDataFromTopicToDatabaseImpl implements TransferDataFromTopicToDatabase {
+public class TransferDataFromTopicToDatabaseUseCaseImpl implements TransferDataFromTopicToDatabaseUseCase {
+
+    private static final String DEVICE_TOPIC_NAME = "devices";
 
     private final DeviceConsumer deviceConsumer;
     private final RegistryRepository registryRepository;
@@ -26,7 +28,7 @@ public class TransferDataFromTopicToDatabaseImpl implements TransferDataFromTopi
 
     private Set<String> knownTopics = new HashSet<>();
 
-    public TransferDataFromTopicToDatabaseImpl(
+    public TransferDataFromTopicToDatabaseUseCaseImpl(
             DeviceConsumer deviceConsumer,
             RegistryRepository registryRepository,
             DeviceInformer deviceInformer,
@@ -39,10 +41,10 @@ public class TransferDataFromTopicToDatabaseImpl implements TransferDataFromTopi
 
     @Override
     public void transferData() {
-        startListening();
-    }
-
-    public void startListening() {
+        deviceConsumer.consume(DEVICE_TOPIC_NAME, (key, message) -> {
+            saveDeviceUseCase.saveIfAbsent(new Device(key, message));
+            log.info("Insert on Table: {} | key: {} | value: {}", DEVICE_TOPIC_NAME, key, message);
+        });
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(this::checkForNewTopics, 0, 10, TimeUnit.SECONDS);
     }
@@ -50,6 +52,7 @@ public class TransferDataFromTopicToDatabaseImpl implements TransferDataFromTopi
     private void checkForNewTopics() {
         try {
             Set<String> currentTopics = deviceInformer.getTopicNames();
+            currentTopics.removeIf(topic -> DEVICE_TOPIC_NAME.equals(topic));
             Set<String> newTopics = new HashSet<>(currentTopics);
             newTopics.removeAll(knownTopics);
             if (!newTopics.isEmpty()) {
@@ -62,12 +65,10 @@ public class TransferDataFromTopicToDatabaseImpl implements TransferDataFromTopi
     }
 
     private void onNewTopicCreated(String topic) {
-        String[] topicSplited = topic.split("_");
-        saveDeviceUseCase.save(new Device(topicSplited[1], topicSplited[0]));
-        deviceConsumer.consume(topic, message -> {
+        deviceConsumer.consume(topic, (key, message) -> {
             registryRepository.createTable(topic);
-            registryRepository.save(new Registry(topic, message));
-            log.info("Insert message in Table {} : {}", topic, message);
+            registryRepository.save(new Registry(topic, key, message));
+            log.info("Insert on Table: {} | key: {} | value: {}", topic, key, message);
         });
     }
 
