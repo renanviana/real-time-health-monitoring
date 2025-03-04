@@ -1,6 +1,6 @@
 package com.renz.healthmonitoring.producerdata.usecases;
 
-public interface TransferDataFromDeviceToTopic {
+public interface TransferDataFromDeviceToTopicUseCase {
 
     void transferData();
 

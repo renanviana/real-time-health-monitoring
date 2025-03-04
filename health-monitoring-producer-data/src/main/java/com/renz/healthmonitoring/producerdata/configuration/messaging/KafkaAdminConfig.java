@@ -3,6 +3,7 @@ package com.renz.healthmonitoring.producerdata.configuration.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,12 @@ public class KafkaAdminConfig {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(configs);
+    }
+
+    @Bean
+    public AdminClient adminClient() {
+        Map<String, Object> configs = kafkaAdmin().getConfigurationProperties();
+        return AdminClient.create(configs);
     }
 
 }

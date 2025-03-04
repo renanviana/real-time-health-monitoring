@@ -1,7 +1,6 @@
 package com.renz.healthmonitoring.consumerdata.configuration;
 
-import java.util.Set;
-
+import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -12,24 +11,30 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceConsumer;
+import com.renz.healthmonitoring.consumerdata.adapter.DeviceInformer;
+import com.renz.healthmonitoring.consumerdata.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerdata.adapter.messaging.KafkaDeviceConsumer;
+import com.renz.healthmonitoring.consumerdata.adapter.messaging.KafkaDeviceInformer;
 import com.renz.healthmonitoring.consumerdata.adapter.persistence.CassandraRegistryRepositoryLegacy;
+import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
 import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabase;
+import com.renz.healthmonitoring.consumerdata.usecases.impl.SaveDeviceUseCaseImpl;
 import com.renz.healthmonitoring.consumerdata.usecases.impl.TransferDataFromTopicToDatabaseImpl;
 
 @Configuration
 @DependsOn({
         "cassandraConfig",
-        "topicNames",
         "kafkaListenerEndpointRegistry",
         "kafkaListenerContainerFactory",
-        "messageHandlerMethodFactory" })
+        "messageHandlerMethodFactory",
+        "adminClient" })
 public class BeanConfig {
 
     @Bean
     @Order(1)
-    public DeviceConsumer deviceConsumer(KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
+    public DeviceConsumer deviceConsumer(
+            KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
             ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory,
             DefaultMessageHandlerMethodFactory messageHandlerMethodFactory) {
         return new KafkaDeviceConsumer(
@@ -46,11 +51,28 @@ public class BeanConfig {
 
     @Bean
     @Order(3)
+    public SaveDeviceUseCase saveDeviceUseCase(DeviceRepository deviceRepository) {
+        return new SaveDeviceUseCaseImpl(deviceRepository);
+    }
+
+    @Bean
+    @Order(4)
+    public DeviceInformer deviceInformer(AdminClient adminClient) {
+        return new KafkaDeviceInformer(adminClient);
+    }
+
+    @Bean
+    @Order(5)
     public TransferDataFromTopicToDatabase transferDataFromTopicToDatabase(
             DeviceConsumer deviceConsumer,
             RegistryRepository registryRepository,
-            Set<String> topicNames) {
-        return new TransferDataFromTopicToDatabaseImpl(deviceConsumer, registryRepository, topicNames);
+            DeviceInformer deviceInformer,
+            SaveDeviceUseCase saveDeviceUseCase) {
+        return new TransferDataFromTopicToDatabaseImpl(
+                deviceConsumer,
+                registryRepository,
+                deviceInformer,
+                saveDeviceUseCase);
     }
 
 }

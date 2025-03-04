@@ -9,12 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -22,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
-@DependsOn("kafkaTopicConfig")
 public class CassandraConfig {
 
     @Value("${spring.data.cassandra.local-datacenter}")
@@ -34,12 +31,6 @@ public class CassandraConfig {
     @Value("${spring.data.cassandra.port}")
     private Integer port;
 
-    private final Set<String> topicNames;
-
-    public CassandraConfig(Set<String> topicNames) {
-        this.topicNames = topicNames;
-    }
-
     @Bean
     public CqlSession cqlSession() {
         CqlSession cqlSession = CqlSession.builder()
@@ -48,7 +39,6 @@ public class CassandraConfig {
                 .build();
         try {
             createKeyspaceAndDeviceTables(cqlSession);
-            createRegistryTables(cqlSession);
         } catch (URISyntaxException | IOException e) {
             log.error(e.getMessage(), e);
         }
@@ -76,17 +66,6 @@ public class CassandraConfig {
             cqlSession.execute(query);
             log.info("Cassandra query executed: {}", query);
         }
-    }
-
-    private void createRegistryTables(CqlSession cqlSession) throws URISyntaxException, IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        Path pathcreateRegistryTableCql = Paths
-                .get(classLoader.getResource("cassandra/createRegistryTable.cql").toURI());
-        String createRegistryTableCql = Files.readString(pathcreateRegistryTableCql, StandardCharsets.UTF_8);
-        topicNames.forEach(topic -> {
-            String script = createRegistryTableCql.replace("${table_name}", topic);
-            cqlSession.execute(script);
-        });
     }
 
 }

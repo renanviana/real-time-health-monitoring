@@ -6,7 +6,7 @@ from threading import Thread
 
 BROKER = "emqx"
 PORT = 1883
-TOPIC = "health/heartbeat"
+TOPIC = "devices/heartbeat"
 DEVICE_IDS = ["8T4iF", "A8pMD", "eHrUQ"]
 
 # function to simulate heartbeat
@@ -43,7 +43,7 @@ def publish_data(device_id):
         client.on_connect = on_connect
         # client.on_publish = on_publish
 
-        topic = f"{TOPIC}_{device_id}"
+        topic = f"{TOPIC}/{device_id}"
         print(f"[{time.time()}] Device {device_id}: Publishing to topic {topic}")
         
         # try connection with retries

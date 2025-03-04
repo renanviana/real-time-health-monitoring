@@ -6,4 +6,6 @@ public interface RegistryRepository {
     
     void save(Registry registry);
 
+    void createTable(String topicName);
+
 }
