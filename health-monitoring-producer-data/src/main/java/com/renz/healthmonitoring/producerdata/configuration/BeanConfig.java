@@ -1,7 +1,6 @@
 package com.renz.healthmonitoring.producerdata.configuration;
 
-import java.util.Set;
-
+import org.apache.kafka.clients.admin.AdminClient;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,16 +8,22 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 import org.springframework.kafka.core.KafkaTemplate;
 
+import com.renz.healthmonitoring.producerdata.adapter.DeviceCreator;
+import com.renz.healthmonitoring.producerdata.adapter.DeviceInformer;
 import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
+import com.renz.healthmonitoring.producerdata.adapter.messaging.KafkaDeviceCreator;
+import com.renz.healthmonitoring.producerdata.adapter.messaging.KafkaDeviceInformer;
 import com.renz.healthmonitoring.producerdata.adapter.messaging.KafkaDevicePublisher;
-import com.renz.healthmonitoring.producerdata.usecases.TransferDataFromDeviceToTopic;
-import com.renz.healthmonitoring.producerdata.usecases.impl.TransferDataFromDeviceToTopicImpl;
+import com.renz.healthmonitoring.producerdata.usecases.CreateTopicUseCase;
+import com.renz.healthmonitoring.producerdata.usecases.TransferDataFromDeviceToTopicUseCase;
+import com.renz.healthmonitoring.producerdata.usecases.impl.CreateTopicUseCaseImpl;
+import com.renz.healthmonitoring.producerdata.usecases.impl.TransferDataFromDeviceToTopicIUseCaseImpl;
 
 @Configuration
 @DependsOn({
         "emqxClient",
         "kafkaTemplate",
-        "topicNames" })
+        "adminClient" })
 public class BeanConfig {
 
     @Bean
@@ -29,14 +34,32 @@ public class BeanConfig {
 
     @Bean
     @Order(2)
-    public TransferDataFromDeviceToTopic transferDataFromDeviceToTopic(
+    public DeviceCreator deviceCreator(AdminClient adminClient) {
+        return new KafkaDeviceCreator(adminClient);
+    }
+
+    @Bean
+    @Order(3)
+    public DeviceInformer deviceInformer(AdminClient adminClient) {
+        return new KafkaDeviceInformer(adminClient);
+    }
+
+    @Bean
+    @Order(4)
+    public CreateTopicUseCase createTopicUseCase(DeviceCreator deviceCreator, DeviceInformer deviceInformer) {
+        return new CreateTopicUseCaseImpl(deviceCreator, deviceInformer);
+    }
+
+    @Bean
+    @Order(5)
+    public TransferDataFromDeviceToTopicUseCase transferDataFromDeviceToTopicUseCase(
             IMqttClient emqxClient,
             DevicePublisher devicePublisher,
-            Set<String> topicNames) {
-        return new TransferDataFromDeviceToTopicImpl(
+            CreateTopicUseCase createTopicUseCase) {
+        return new TransferDataFromDeviceToTopicIUseCaseImpl(
                 emqxClient,
                 devicePublisher,
-                topicNames);
+                createTopicUseCase);
     }
 
 }

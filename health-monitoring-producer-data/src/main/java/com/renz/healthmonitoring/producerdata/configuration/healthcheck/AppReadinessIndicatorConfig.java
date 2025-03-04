@@ -7,10 +7,8 @@ import org.springframework.stereotype.Component;
 @DependsOn({
         "kafkaAdminConfig",
         "kafkaProducerConfig",
-        "kafkaTopicConfig",
         "emqxConfig",
         "beanConfig",
-        "devicesConfig",
         "logConfig" })
 public class AppReadinessIndicatorConfig {
 

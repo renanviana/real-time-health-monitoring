@@ -7,9 +7,7 @@ import org.springframework.stereotype.Component;
 @DependsOn({
         "kafkaAdminConfig",
         "kafkaConsumerConfig",
-        "kafkaTopicConfig",
         "cassandraConfig",
-        "cassandraDeviceTypesConfig",
         "logConfig",
         "beanConfig" })
 public class AppReadinessIndicatorConfig {

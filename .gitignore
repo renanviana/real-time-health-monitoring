@@ -3,3 +3,7 @@ tasks.txt
 
 .DS_Store
 *.dylib
+
+health-monitoring-producer-data-tcp*
+health-monitoring-consumer-data-tcp*
+health-monitoring-consumer-api-tcp*
