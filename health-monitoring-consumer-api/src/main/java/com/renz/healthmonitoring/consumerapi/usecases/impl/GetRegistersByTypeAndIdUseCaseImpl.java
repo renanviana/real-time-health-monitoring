@@ -23,23 +23,22 @@ public class GetRegistersByTypeAndIdUseCaseImpl implements GetRegistersByTypeAnd
     @Override
     public Flux<String> apply(String type, String id) {
 
-        // TODO: incluir validacao para type + id
-        // final String topic = deviceName.concat("_").concat(id);
-
-        Sinks.Many<String> sink = sinkMap.computeIfAbsent(id, key -> {
-            Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer();
-            deviceConsumer.consume(id, message -> newSink.tryEmitNext(message));
-            return newSink;
+        Sinks.Many<String> sink = sinkMap.compute(id, (key, existingSink) -> {
+            if (existingSink == null || existingSink.currentSubscriberCount() == 0) {
+                Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer();
+                deviceConsumer.consume(id, message -> newSink.tryEmitNext(message));
+                return newSink;
+            }
+            return existingSink;
         });
 
         return sink.asFlux()
                 .doOnCancel(() -> {
-                    log.info("Subscriber disconnected for topic: {}", id);
-                    if (sink.currentSubscriberCount() == 0) {
+                    if (sink.currentSubscriberCount() == 1) {
                         sinkMap.remove(id);
+                        deviceConsumer.disconnect(id);
                     }
-                })
-                .doOnSubscribe(subscription -> log.info("New subscriber connected for topic: {}", id));
-    }
+                });
 
+    }
 }

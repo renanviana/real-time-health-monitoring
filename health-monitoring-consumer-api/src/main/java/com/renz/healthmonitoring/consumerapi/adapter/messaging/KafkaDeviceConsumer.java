@@ -1,6 +1,9 @@
 package com.renz.healthmonitoring.consumerapi.adapter.messaging;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +28,7 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
     private final ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory;
     private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
     private final DefaultMessageHandlerMethodFactory messageHandlerMethodFactory;
+    private final Map<String, AtomicInteger> activeSubscribers = new ConcurrentHashMap<>();
 
     public KafkaDeviceConsumer(
             KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
@@ -38,17 +42,47 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
     @Override
     public void consume(String topic, Consumer<String> processMessageHandler) {
         String listenerId = "consumerApiListener-" + topic;
-        if (kafkaListenerEndpointRegistry.getListenerContainer(listenerId) == null) {
-            MethodKafkaListenerEndpoint<String, String> endpoint = new MethodKafkaListenerEndpoint<>();
-            endpoint.setId(listenerId);
-            endpoint.setGroupId(groupId);
-            endpoint.setTopics(topic);
-            endpoint.setBean(new MessageProcessor(processMessageHandler));
-            endpoint.setMethod(getProcessMethod());
-            endpoint.setMessageHandlerMethodFactory(messageHandlerMethodFactory);
-            kafkaListenerEndpointRegistry.registerListenerContainer(endpoint, kafkaListenerContainerFactory);
-            MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(listenerId);
-            container.start();
+        activeSubscribers.compute(topic, (key, count) -> {
+            if (count == null || count.get() == 0) {
+                createKafkaListener(topic, listenerId, processMessageHandler);
+                return new AtomicInteger(1);
+            } else {
+                count.incrementAndGet();
+                return count;
+            }
+        });
+    }
+
+    @Override
+    public void disconnect(String topic) {
+        activeSubscribers.computeIfPresent(topic, (key, count) -> {
+            int remainingSubscribers = count.decrementAndGet();
+            if (remainingSubscribers <= 0) {
+                removeKafkaListener(topic);
+                return null;
+            }
+            return count;
+        });
+    }
+
+    private void createKafkaListener(String topic, String listenerId, Consumer<String> processMessageHandler) {
+        MethodKafkaListenerEndpoint<String, String> endpoint = new MethodKafkaListenerEndpoint<>();
+        endpoint.setId(listenerId);
+        endpoint.setGroupId(groupId);
+        endpoint.setTopics(topic);
+        endpoint.setBean(new MessageProcessor(processMessageHandler));
+        endpoint.setMethod(getProcessMethod());
+        endpoint.setMessageHandlerMethodFactory(messageHandlerMethodFactory);
+        kafkaListenerEndpointRegistry.registerListenerContainer(endpoint, kafkaListenerContainerFactory);
+        kafkaListenerEndpointRegistry.getListenerContainer(listenerId).start();
+    }
+
+    private void removeKafkaListener(String topic) {
+        String listenerId = "consumerApiListener-" + topic;
+        MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(listenerId);
+        if (container != null) {
+            container.stop();
+            kafkaListenerEndpointRegistry.unregisterListenerContainer(listenerId);
         }
     }
 
