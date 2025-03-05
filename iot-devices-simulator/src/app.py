@@ -1,0 +1,30 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+from simulator import list_devices
+from simulator import publish_new_sensor
+from simulator import stop_thread
+from simulator import stop_all
+
+app = FastAPI()
+
+class Device(BaseModel):
+    type: str
+
+@app.get("iot-devices-simulator/devices")
+def get_devices():
+    return { "devices": list_devices() }
+
+@app.post("iot-devices-simulator/devices")
+async def post_devices(device: Device):
+    device = publish_new_sensor(device.type)
+    return { "device": device }
+
+@app.delete("iot-devices-simulator/devices/{device_id}")
+async def delete_devices_id(device_id: str):
+    stop_thread(device_id)
+    return { "message": f"Device {device_id} unsubscribed from EMQX" }
+
+@app.delete("iot-devices-simulator/devices")
+async def delete_devices():
+    stop_all()
+    return { "message": f"Unsubscribed all devices from EMQX" }
