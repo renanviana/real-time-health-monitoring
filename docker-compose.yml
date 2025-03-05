@@ -64,25 +64,15 @@ services:
       start_period: 30s
     networks:
       - health_monitoring_network
-  # iot_devices_simulator:
-  #   build: iot-devices-simulator
-  #   image: iot-devices-simulator:latest
-  #   container_name: iot_devices_simulator
-  #   command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-  #   ports:
-  #     - 8000:8000
-  #   volumes:
-  #     - ./iot-devices-simulator/src:/app
-  #   networks:
-  #     - health_monitoring_network
-  heartbeat:
-    depends_on:
-      - emqx
-      - health_monitoring_consumer_api
+  iot_devices_simulator:
     build: iot-devices-simulator
-    image: heartbeat:latest
-    container_name: heartbeat
-    command: python3 heartbeat.py
+    image: iot-devices-simulator:latest
+    container_name: iot_devices_simulator
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - 8000:8000
+    volumes:
+      - ./iot-devices-simulator/src:/app
     networks:
       - health_monitoring_network
   health_monitoring_producer_data:

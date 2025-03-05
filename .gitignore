@@ -1,9 +1,7 @@
-### list of tasks about the project ###
 tasks.txt
-
 .DS_Store
 *.dylib
-
 health-monitoring-producer-data-tcp*
 health-monitoring-consumer-data-tcp*
 health-monitoring-consumer-api-tcp*
+__pycache__
