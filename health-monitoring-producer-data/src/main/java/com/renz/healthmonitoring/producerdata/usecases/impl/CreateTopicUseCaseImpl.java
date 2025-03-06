@@ -15,11 +15,11 @@ public class CreateTopicUseCaseImpl implements CreateTopicUseCase {
     }
 
     @Override
-    public void createIfAbsent(String topicName) {
+    public void createIfAbsent(String topicName, Integer partitions, Short replicationFactor) {
         if (deviceInformer.getTopicNames().contains(topicName)) {
             return;
         }
-        deviceCreator.create(topicName);
+        deviceCreator.create(topicName, partitions, replicationFactor);
     }
     
 }

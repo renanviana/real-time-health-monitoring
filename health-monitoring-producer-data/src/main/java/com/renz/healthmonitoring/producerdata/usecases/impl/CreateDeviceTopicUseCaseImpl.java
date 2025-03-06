@@ -1,5 +1,7 @@
 package com.renz.healthmonitoring.producerdata.usecases.impl;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.renz.healthmonitoring.producerdata.adapter.DeviceInformer;
 import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
 import com.renz.healthmonitoring.producerdata.usecases.CreateDeviceTopicUseCase;
@@ -11,6 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 public class CreateDeviceTopicUseCaseImpl implements CreateDeviceTopicUseCase {
 
     private static final String DEVICE_TOPIC_NAME = "devices";
+    
+    @Value("${spring.kafka.topics.devices.partitions}")
+    private Integer partitions;
+
+    @Value("${spring.kafka.topics.devices.replication-factor}")
+    private Short replicationFactor;
 
     private final CreateTopicUseCase createTopicUseCase;
     private final DevicePublisher devicePublisher;
@@ -30,7 +38,7 @@ public class CreateDeviceTopicUseCaseImpl implements CreateDeviceTopicUseCase {
         if (deviceInformer.getTopicNames().contains(key)) {
             return;
         }
-        createTopicUseCase.createIfAbsent(DEVICE_TOPIC_NAME);
+        createTopicUseCase.createIfAbsent(DEVICE_TOPIC_NAME, partitions, replicationFactor);
         devicePublisher.publish(DEVICE_TOPIC_NAME, key, device);
         log.info("Push message to Kafka topic {} | key: {} | value: {}", DEVICE_TOPIC_NAME, key, device);
     }
