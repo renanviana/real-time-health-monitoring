@@ -6,14 +6,13 @@ import org.springframework.stereotype.Component;
 
 import com.renz.healthmonitoring.consumerdata.HealthMonitoringConsumerDataApplication;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class HealthIndicatorConfig implements HealthIndicator {
 
     private final AppReadinessIndicatorConfig appReadinessIndicatorConfig;
-
-    public HealthIndicatorConfig(AppReadinessIndicatorConfig appReadinessIndicatorConfig) {
-        this.appReadinessIndicatorConfig = appReadinessIndicatorConfig;
-    }
 
     @Override
     public Health health() {

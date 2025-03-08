@@ -7,16 +7,14 @@ import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceTypeResponse;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@RequiredArgsConstructor
 public class GetDevicesUseCaseImpl implements GetDevicesUseCase {
     
     private final DeviceRepository deviceRepository;
-
-    public GetDevicesUseCaseImpl(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
-    }
 
     @Override
     public Mono<List<DeviceTypeResponse>> apply() {

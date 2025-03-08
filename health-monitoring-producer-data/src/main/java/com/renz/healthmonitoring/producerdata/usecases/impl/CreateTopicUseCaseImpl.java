@@ -4,15 +4,13 @@ import com.renz.healthmonitoring.producerdata.adapter.DeviceCreator;
 import com.renz.healthmonitoring.producerdata.adapter.DeviceInformer;
 import com.renz.healthmonitoring.producerdata.usecases.CreateTopicUseCase;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class CreateTopicUseCaseImpl implements CreateTopicUseCase {
 
     private final DeviceCreator deviceCreator;
     private final DeviceInformer deviceInformer;
-
-    public CreateTopicUseCaseImpl(DeviceCreator deviceCreator, DeviceInformer deviceInformer) {
-        this.deviceCreator = deviceCreator;
-        this.deviceInformer = deviceInformer;
-    }
 
     @Override
     public void createIfAbsent(String topicName, Integer partitions, Short replicationFactor) {

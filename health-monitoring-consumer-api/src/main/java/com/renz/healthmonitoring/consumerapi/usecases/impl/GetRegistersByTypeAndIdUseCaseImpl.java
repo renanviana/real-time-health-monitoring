@@ -6,19 +6,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByTypeAndIdUseCase;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Slf4j
+@RequiredArgsConstructor
 public class GetRegistersByTypeAndIdUseCaseImpl implements GetRegistersByTypeAndIdUseCase {
 
     private final DeviceConsumer deviceConsumer;
-    private final Map<String, Sinks.Many<String>> sinkMap = new ConcurrentHashMap<>();
-
-    public GetRegistersByTypeAndIdUseCaseImpl(DeviceConsumer deviceConsumer) {
-        this.deviceConsumer = deviceConsumer;
-    }
+    private Map<String, Sinks.Many<String>> sinkMap = new ConcurrentHashMap<>();
 
     @Override
     public Flux<String> apply(String type, String id) {

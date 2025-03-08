@@ -7,10 +7,16 @@ import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
 import com.renz.healthmonitoring.producerdata.usecases.CreateDeviceTopicUseCase;
 import com.renz.healthmonitoring.producerdata.usecases.CreateTopicUseCase;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class CreateDeviceTopicUseCaseImpl implements CreateDeviceTopicUseCase {
+
+    private final CreateTopicUseCase createTopicUseCase;
+    private final DevicePublisher devicePublisher;
+    private final DeviceInformer deviceInformer;
 
     private static final String DEVICE_TOPIC_NAME = "devices";
     
@@ -19,19 +25,6 @@ public class CreateDeviceTopicUseCaseImpl implements CreateDeviceTopicUseCase {
 
     @Value("${spring.kafka.topics.devices.replication-factor}")
     private Short replicationFactor;
-
-    private final CreateTopicUseCase createTopicUseCase;
-    private final DevicePublisher devicePublisher;
-    private final DeviceInformer deviceInformer;
-
-    public CreateDeviceTopicUseCaseImpl(
-            CreateTopicUseCase createTopicUseCase,
-            DevicePublisher devicePublisher,
-            DeviceInformer deviceInformer) {
-        this.createTopicUseCase = createTopicUseCase;
-        this.devicePublisher = devicePublisher;
-        this.deviceInformer = deviceInformer;
-    }
 
     @Override
     public void createDeviceTopicIfAbsentAndPublish(String key, String device) {

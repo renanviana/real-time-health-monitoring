@@ -34,12 +34,12 @@ public class BeanConfig {
     @Bean
     @Order(1)
     public DeviceConsumer deviceConsumer(
-            KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
             ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory,
+            KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
             DefaultMessageHandlerMethodFactory messageHandlerMethodFactory) {
         return new KafkaDeviceConsumer(
-                kafkaListenerEndpointRegistry,
                 kafkaListenerContainerFactory,
+                kafkaListenerEndpointRegistry,
                 messageHandlerMethodFactory);
     }
 

@@ -8,26 +8,21 @@ import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
 import com.renz.healthmonitoring.producerdata.usecases.CreateRegisterTopicUseCase;
 import com.renz.healthmonitoring.producerdata.usecases.CreateTopicUseCase;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class CreateRegisterTopicUseCaseImpl implements CreateRegisterTopicUseCase {
+
+    private final CreateTopicUseCase createTopicUseCase;
+    private final DevicePublisher devicePublisher;
 
     @Value("${spring.kafka.topics.register.partitions}")
     private Integer partitions;
 
     @Value("${spring.kafka.topics.register.replication-factor}")
     private Short replicationFactor;
-
-    private final CreateTopicUseCase createTopicUseCase;
-    private final DevicePublisher devicePublisher;
-
-    public CreateRegisterTopicUseCaseImpl(
-            CreateTopicUseCase createTopicUseCase,
-            DevicePublisher devicePublisher) {
-        this.createTopicUseCase = createTopicUseCase;
-        this.devicePublisher = devicePublisher;
-    }
 
     @Override
     public void createRegisterTopicAndPublish(String topic, String value) {

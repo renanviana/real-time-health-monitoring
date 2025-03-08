@@ -8,26 +8,19 @@ import com.renz.healthmonitoring.producerdata.usecases.CreateDeviceTopicUseCase;
 import com.renz.healthmonitoring.producerdata.usecases.CreateRegisterTopicUseCase;
 import com.renz.healthmonitoring.producerdata.usecases.TransferDataFromDeviceToTopicUseCase;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class TransferDataFromDeviceToTopicIUseCaseImpl implements TransferDataFromDeviceToTopicUseCase {
-
-    @Value("${broker.emqx.topic}")
-    private String emqxTopic;
 
     private final IMqttClient emqxClient;
     private final CreateDeviceTopicUseCase createDeviceTopicUseCase;
     private final CreateRegisterTopicUseCase createRegisterTopicUseCase;
-
-    public TransferDataFromDeviceToTopicIUseCaseImpl(
-            IMqttClient emqxClient,
-            CreateDeviceTopicUseCase createDeviceTopicUseCase,
-            CreateRegisterTopicUseCase createRegisterTopicUseCase) {
-        this.emqxClient = emqxClient;
-        this.createDeviceTopicUseCase = createDeviceTopicUseCase;
-        this.createRegisterTopicUseCase = createRegisterTopicUseCase;
-    }
+    
+    @Value("${broker.emqx.topic}")
+    private String emqxTopic;
 
     public void transferData() {
         try {

@@ -8,16 +8,14 @@ import org.apache.kafka.clients.admin.AdminClient;
 
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceInformer;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class KafkaDeviceInformer implements DeviceInformer {
 
     private final AdminClient adminClient;
-
-    public KafkaDeviceInformer(AdminClient adminClient) {
-        this.adminClient = adminClient;
-    }
 
     @Override
     public Set<String> getTopicNames() {

@@ -4,16 +4,14 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class CassandraRegistryRepositoryLegacy implements RegistryRepository {
 
     private final CqlSession cqlSession;
-
-    public CassandraRegistryRepositoryLegacy(CqlSession cqlSession) {
-        this.cqlSession = cqlSession;
-    }
 
     @Override
     public void save(Registry registry) {
