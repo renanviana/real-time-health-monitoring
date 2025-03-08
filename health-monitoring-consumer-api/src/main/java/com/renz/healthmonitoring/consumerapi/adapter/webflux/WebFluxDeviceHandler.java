@@ -14,23 +14,16 @@ import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByTypeAndIdUseCase;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@RequiredArgsConstructor
 public class WebFluxDeviceHandler implements DeviceHandler {
 
     private final GetDevicesUseCase getDevicesUseCase;
     private final GetDevicesByTypeUseCase getDevicesByTypeUseCase;
     private final GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase;
-
-    public WebFluxDeviceHandler(
-            GetDevicesUseCase getDevicesUseCase,
-            GetDevicesByTypeUseCase getDevicesByTypeUseCase,
-            GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase) {
-        this.getDevicesUseCase = getDevicesUseCase;
-        this.getDevicesByTypeUseCase = getDevicesByTypeUseCase;
-        this.getRegistersByTypeAndIdUseCase = getRegistersByTypeAndIdUseCase;
-    }
 
     @Override
     public Mono<ServerResponse> getDevices(ServerRequest request) {

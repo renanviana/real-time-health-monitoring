@@ -9,15 +9,14 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @DependsOn("deviceHandler")
+@RequiredArgsConstructor
 public class RestRouterConfig {
 
     private final DeviceHandler deviceHandler;
-
-    public RestRouterConfig(DeviceHandler deviceHandler) {
-        this.deviceHandler = deviceHandler;
-    }
 
     @Bean
     public RouterFunction<ServerResponse> routerFunction() {

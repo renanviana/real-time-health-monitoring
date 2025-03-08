@@ -18,26 +18,20 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class KafkaDeviceConsumer implements DeviceConsumer {
 
-    @Value(value = "${spring.kafka.consumer.group-id}")
-    private String groupId;
     private final ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory;
     private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
     private final DefaultMessageHandlerMethodFactory messageHandlerMethodFactory;
-    private final Map<String, AtomicInteger> activeSubscribers = new ConcurrentHashMap<>();
 
-    public KafkaDeviceConsumer(
-            KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
-            ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory,
-            DefaultMessageHandlerMethodFactory messageHandlerMethodFactory) {
-        this.kafkaListenerEndpointRegistry = kafkaListenerEndpointRegistry;
-        this.kafkaListenerContainerFactory = kafkaListenerContainerFactory;
-        this.messageHandlerMethodFactory = messageHandlerMethodFactory;
-    }
+    @Value(value = "${spring.kafka.consumer.group-id}")
+    private String groupId;
+    private Map<String, AtomicInteger> activeSubscribers = new ConcurrentHashMap<>();
 
     @Override
     public void consume(String topic, Consumer<String> processMessageHandler) {

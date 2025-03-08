@@ -4,16 +4,14 @@ import com.renz.healthmonitoring.consumerdata.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class SaveDeviceUseCaseImpl implements SaveDeviceUseCase {
     
     private final DeviceRepository deviceRepository;
-
-    public SaveDeviceUseCaseImpl(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
-    }
 
     @Override
     public void saveIfAbsent(Device device) {

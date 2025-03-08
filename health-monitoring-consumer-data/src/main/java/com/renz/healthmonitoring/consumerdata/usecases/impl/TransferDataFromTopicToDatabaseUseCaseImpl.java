@@ -14,30 +14,20 @@ import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
 import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabaseUseCase;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class TransferDataFromTopicToDatabaseUseCaseImpl implements TransferDataFromTopicToDatabaseUseCase {
-
-    private static final String DEVICE_TOPIC_NAME = "devices";
 
     private final DeviceConsumer deviceConsumer;
     private final RegistryRepository registryRepository;
     private final DeviceInformer deviceInformer;
     private final SaveDeviceUseCase saveDeviceUseCase;
 
+    private static final String DEVICE_TOPIC_NAME = "devices";
     private Set<String> knownTopics = new HashSet<>();
-
-    public TransferDataFromTopicToDatabaseUseCaseImpl(
-            DeviceConsumer deviceConsumer,
-            RegistryRepository registryRepository,
-            DeviceInformer deviceInformer,
-            SaveDeviceUseCase saveDeviceUseCase) {
-        this.deviceConsumer = deviceConsumer;
-        this.registryRepository = registryRepository;
-        this.deviceInformer = deviceInformer;
-        this.saveDeviceUseCase = saveDeviceUseCase;
-    }
 
     @Override
     public void transferData() {

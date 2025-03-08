@@ -1,6 +1,5 @@
 package com.renz.healthmonitoring.consumerdata;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,12 +7,14 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 
 import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabaseUseCase;
 
+import lombok.RequiredArgsConstructor;
+
 @SpringBootApplication
 @EnableCassandraRepositories
+@RequiredArgsConstructor
 public class HealthMonitoringConsumerDataApplication implements CommandLineRunner {
 
-	@Autowired
-	private TransferDataFromTopicToDatabaseUseCase transferDataFromTopicToDatabaseUseCase;
+	private final TransferDataFromTopicToDatabaseUseCase transferDataFromTopicToDatabaseUseCase;
 
 	public static void main(String[] args) {
 		SpringApplication.run(HealthMonitoringConsumerDataApplication.class, args);
