@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Health Monitoring</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+    <div class="header">
+        <a href="#" id="dashboardLink" onclick="showDashboard()">Dashboard</a>
+        <a href="#" id="formLink" onclick="showForm()">Dispositivos</a>
+    </div>
+    <div class="container" id="dashboard">
+        <h1>Dashboard - Monitoramento de Dispositivos de Saúde em Tempo Real </h1>
+        <div class="grid-container" id="chartsContainer"></div>
+    </div>
+    <div class="form-container" id="deviceForm">
+        <h2>Cadastrar Dispositivo</h2>
+        <div class="form-controls">
+            <select id="deviceType">
+                <option value="">Selecione...</option>
+                <option value="ecg">Eletrocardiograma</option>
+                <option value="temp">Temperatura Corporal</option>
+                <option value="spO2">Saturação de Oxigênio</option>
+                <option value="bloodP">Pressão Sanguínea</option>
+            </select>
+            <button class="btn-cadastrar" onclick="createDevice()">
+                Cadastrar
+            </button>
+        </div>
+        <table class="device-table" id="deviceTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="deviceTableBody"></tbody>
+        </table>
+    </div>
+    <script src="js/main.js"></script>
+    <script src="js/ecg-chart.js"></script>
+    <script src="js/temperature-chart.js"></script>
+    <script src="js/oxygen-saturation-chart.js"></script>
+    <script src="js/blood-pressure-chart.js"></script>
+</body>
+</html>

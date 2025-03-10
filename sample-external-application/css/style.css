@@ -1,0 +1,189 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+h2 {
+    color: #333;
+}
+
+.header {
+    width: 100%;
+    background: #333;
+    padding: 15px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 60px;
+    z-index: 1000;
+}
+
+.header a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    margin-left: 20px;
+    padding: 5px 10px;
+}
+
+.header a.active {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.container {
+    text-align: center;
+    width: 90%;
+    max-width: 1200px;
+    margin-top: 80px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+.form-container {
+    display: none;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    width: 100%;
+    margin-top: 100px;
+}
+
+.form-container select, .form-container button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-container button {
+    background: #333;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-cadastrar {
+    background-color: #333;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: 200px;
+    margin-left: 20px;
+    justify-content: center;
+}
+
+.btn-cadastrar:hover {
+    background-color: #555;
+}
+
+.btn-excluir {
+    background-color: #f44336;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    max-width: 100px;
+}
+
+.btn-excluir:hover {
+    background-color: #d32f2f;
+}
+
+.device-table {
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.device-table th, .device-table td {
+    padding: 12px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+.device-table th {
+    background-color: #333;
+    color: white;
+}
+
+.device-table td {
+    background-color: white;
+}
+
+.device-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.device-table .actions {
+    text-align: center;
+}
+
+.form-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-controls select {
+    width: 70%;
+}
+
+.form-controls button {
+    width: 25%;
+}

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from simulator import list_devices
 from simulator import publish_new_sensor
@@ -6,6 +7,14 @@ from simulator import stop_thread
 from simulator import stop_all
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Device(BaseModel):
     type: str

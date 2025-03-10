@@ -68,11 +68,9 @@ services:
     build: iot-devices-simulator
     image: iot-devices-simulator:latest
     container_name: iot_devices_simulator
-    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
     ports:
       - 8000:8000
-    volumes:
-      - ./iot-devices-simulator/src:/app
     networks:
       - health_monitoring_network
   health_monitoring_producer_data:

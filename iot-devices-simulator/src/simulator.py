@@ -10,11 +10,65 @@ PORT = 1883
 TOPIC = "devices"
 
 sensors = {
-    "hr": {"name": "heart rate", "unit": "bpm", "min": 60, "max": 100, "type": int},
-    "temp": {"name": "temperature", "unit": "degrees", "min": 36.0, "max": 37.5, "type": float},
-    "spO2": {"name": "oxygen saturation", "unit": "percentage", "min": 95, "max": 100, "type": int},
-    "bpSys": {"name": "blood pressure systolic", "unit": "mmHg", "min": 90, "max": 140, "type": int},
-    "bpDia": {"name": "blood pressure diastolic", "unit": "mmHg", "min": 60, "max": 90, "type": int},
+    "ecg": {
+        "name": "ECG", 
+        "frequency": 1,
+        "values": {
+            "ecg": {
+                "name": "ECG",
+                "unit": "bpm", 
+                "min": 60,
+                "max": 100, 
+                "type": "int"
+            }
+        }
+    },
+    "temp": {
+        "name": "temperature", 
+        "frequency": 1,
+        "values": {
+            "temp": {
+                "name": "temperature",
+                "unit": "degrees", 
+                "min": 36.0, 
+                "max": 37.5, 
+                "type": "float"
+            }
+        }
+    },
+    "spO2": {
+        "name": "oxygen saturation", 
+        "frequency": 1,
+        "values": {
+            "spO2": {
+                "name": "oxygen saturation",
+                "unit": "percentage", 
+                "min": 80,
+                "max": 100, 
+                "type": "int"
+            }
+        }
+    },
+    "bloodP": {
+        "name": "blood pressure", 
+        "frequency": 1, 
+        "values": {
+            "bpSys": {
+                "name": "blood pressure systolic", 
+                "unit": "mmHg", 
+                "min": 90, 
+                "max": 140, 
+                "type": "int"
+            },
+            "bpDia": {
+                "name": "blood pressure diastolic", 
+                "unit": "mmHg", 
+                "min": 60, 
+                "max": 90, 
+                "type": "int"
+            }
+        }
+    }
 }
 
 devices = {}    # {device_id: device}
@@ -22,7 +76,7 @@ running = {}    # {device_id: bool}
 
 def publish_new_sensor(sensor_type):
     sensor = sensors[sensor_type]
-    device =  {
+    device = {
         "id": str(uuid.uuid4()),
         "name": sensor["name"],
         "type": sensor_type
@@ -31,42 +85,49 @@ def publish_new_sensor(sensor_type):
     return device
 
 def publish_data(device):
-    try:
-        client = mqtt.Client()
+    client = mqtt.Client()
+    topic = f"{TOPIC}/{device['type']}/{device['id']}"
+    
+    print(f"[{time.time()}] Device {device['id']}: Publishing to topic {topic}")
 
-        topic = f"{TOPIC}/{device["type"]}/{device["id"]}"
-        print(f"[{time.time()}] Device {device["id"]}: Publishing to topic {topic}")
-        
-        if connect_with_retries(client):
-            client.loop_start()  # keep client in execution to publish messages
-            while running.get(device["id"], False):
-                device_data = generate_device_data(device)
-                payload = json.dumps(device_data)
-                result = client.publish(topic, payload, qos=1)
-                status = result[0]
-                if status == 0:
-                    print(f"[{time.time()}] Device {device["id"]}: Sent `{payload}` successfully.")
-                else:
-                    print(f"[{time.time()}] Device {device["id"]}: Failed to send message (status: {status})")
-                time.sleep(1)
-        else:
-            print("Could not connect to MQTT Broker. Exiting.")
+    if not connect_with_retries(client):
+        print(f"[{time.time()}] Device {device['id']}: Could not connect to MQTT Broker. Stopping.")
+        return
+
+    try:
+        client.loop_start()  # keep client in execution to publish messages
+        while running.get(device["id"], False):
+            device_data = generate_device_data(device)
+            payload = json.dumps(device_data)
+            result = client.publish(topic, payload, qos=1)
+            status = result[0]
+            if status == 0:
+                print(f"[{time.time()}] Device {device['id']}: Sent `{payload}` successfully.")
+            else:
+                print(f"[{time.time()}] Device {device['id']}: Failed to send message (status: {status})")
+            time.sleep(sensors[device["type"]]["frequency"])
     except Exception as e:
-        print(f"[{time.time()}] Error with device {device["id"]}: {e}")
+        print(f"[{time.time()}] Error with device {device['id']}: {e}")
+    finally:
+        client.loop_stop()
+        client.disconnect()
 
 def generate_device_data(device):
     sensor = sensors[device["type"]]
-    value = round(random.uniform(sensor["min"], sensor["max"]), 2)
-    if sensor["type"] == int:
-        value = int(value)
-    return {
-        "id": device["id"],
-        "name": sensor["name"],
-        "type": device["type"],
-        "timestamp": int(time.time()),
-        "unit": sensor["unit"],
-        "value": value
-    }
+    results = {}
+    for key, value in sensor["values"].items():
+        result = round(random.uniform(value["min"], value["max"]), 2)
+        if value["type"] == "int":
+            result = int(result)
+        results[key] = {
+            "id": device["id"],
+            "name": value["name"],
+            "device_type": device["type"],  # Renomeado para evitar confusão
+            "timestamp": int(time.time()),
+            "unit": value["unit"],
+            "value": result
+        }
+    return results
 
 def connect_with_retries(client, retries=10, delay=5):
     for attempt in range(retries):
@@ -80,7 +141,7 @@ def connect_with_retries(client, retries=10, delay=5):
     return False
 
 def start_thread(device):
-    if device["id"] in running and running[device["id"]]:
+    if running.get(device["id"], False):
         return
     running[device["id"]] = True
     devices[device["id"]] = device
@@ -89,7 +150,7 @@ def start_thread(device):
     thread.start()
 
 def stop_thread(device_id):
-    if device_id in list(running.keys()):
+    if running.get(device_id):
         running[device_id] = False
 
 def stop_all():
@@ -97,8 +158,4 @@ def stop_all():
         stop_thread(device_id)
 
 def list_devices():
-    results = []
-    for device_id in list(running.keys()):
-        if running[device_id]:
-            results.append(devices[device_id])
-    return results
+    return [devices[device_id] for device_id in running.keys() if running[device_id]]
