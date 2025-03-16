@@ -50,8 +50,8 @@ function createOxygenSaturationChart(deviceId) {
               },
             },
             title: { display: true, text: "HH:mm:ss" },
-            min: () => Date.now() - showLastSeconds,
-            max: () => Date.now(),
+            min: () => lastTimestamp - showLastSeconds,
+            max: () => lastTimestamp,
             ticks: {
               autoSkip: true,
               maxTicksLimit: 8,
@@ -82,7 +82,7 @@ function createOxygenSaturationChart(deviceId) {
       chart.data.datasets[0].data.push(newPoint);
       chart.data.datasets[1].data.push(newPoint);
 
-      const cutoffTime = now - (showLastSeconds + 1000);
+      const cutoffTime = now - showLastSeconds;
       const filteredLabels = chart.data.labels.filter(
         (label) => label >= cutoffTime
       );
@@ -112,7 +112,7 @@ function createOxygenSaturationChart(deviceId) {
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(JSON.parse(event.data));
-        lastTimestamp = data.spO2.timestamp;
+        lastTimestamp = data.spO2.timestamp * 1000;
         currentValue = data.spO2.value;
         updateChart();
       };

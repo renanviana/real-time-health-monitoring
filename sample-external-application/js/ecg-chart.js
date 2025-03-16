@@ -3,7 +3,6 @@ function createEcgChart(deviceId) {
 
   const showLastSeconds = 30000;
   let currentBPM = 80;
-  let lastTimestamp = Date.now();
   let sseConnected = false;
   let eventSource = null;
 
@@ -64,7 +63,7 @@ function createEcgChart(deviceId) {
     if (!sseConnected) return;
 
     const newPoint = generateECGPoint();
-    const now = lastTimestamp;
+    let now = Date.now();
 
     chart.data.labels.push(now);
     chart.data.datasets[0].data.push(newPoint);
@@ -93,7 +92,6 @@ function createEcgChart(deviceId) {
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(JSON.parse(event.data));
-      lastTimestamp = data.ecg.timestamp;
       currentBPM = data.ecg.value;
     };
 

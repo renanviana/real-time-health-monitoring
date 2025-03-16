@@ -42,8 +42,8 @@ function createTemperatureChart(deviceId) {
             },
           },
           title: { display: true, text: "HH:mm:ss" },
-          min: () => Date.now() - showLastSeconds,
-          max: () => Date.now(),
+          min: () => lastTimestamp - showLastSeconds,
+          max: () => lastTimestamp,
           ticks: {
             autoSkip: true,
             maxTicksLimit: 8,
@@ -73,7 +73,7 @@ function createTemperatureChart(deviceId) {
     chart.data.labels.push(now);
     chart.data.datasets[0].data.push(newPoint);
 
-    const cutoffTime = now - (showLastSeconds + 1000);
+    const cutoffTime = now - showLastSeconds;
     const filteredLabels = chart.data.labels.filter(
       (label) => label >= cutoffTime
     );
@@ -97,7 +97,7 @@ function createTemperatureChart(deviceId) {
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(JSON.parse(event.data));
-      lastTimestamp = data.temp.timestamp;
+      lastTimestamp = data.temp.timestamp * 1000;
       currentValue = data.temp.value;
       updateChart();
     };

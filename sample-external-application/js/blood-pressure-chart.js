@@ -51,8 +51,8 @@ function createBloodPressureChart(deviceId) {
             },
           },
           title: { display: true, text: "Tempo" },
-          min: () => Date.now() - showLastSeconds,
-          max: () => Date.now(),
+          min: () => lastTimestamp - showLastSeconds,
+          max: () => lastTimestamp,
         },
         y: {
           min: 50,
@@ -88,7 +88,7 @@ function createBloodPressureChart(deviceId) {
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(JSON.parse(event.data));
-      lastTimestamp = data.bpSys.timestamp;
+      lastTimestamp = data.bpSys.timestamp * 1000;
       currentValueBpSys = data.bpSys.value;
       currentValueBpDia = data.bpDia.value;
       updateChart();
