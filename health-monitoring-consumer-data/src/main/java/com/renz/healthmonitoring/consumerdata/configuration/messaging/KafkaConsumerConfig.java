@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +14,11 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
+import org.springframework.util.backoff.FixedBackOff;
 
 @EnableKafka
 @Configuration
@@ -28,6 +33,18 @@ public class KafkaConsumerConfig {
     @Value(value = "${spring.kafka.consumer.auto-offset-reset}")
     private String autoOffsetReset;
 
+    @Value(value = "${spring.kafka.topics.dlq.name}")
+    private String dlqTopicName;
+
+    @Value(value = "${spring.kafka.topics.dlq.partitions}")
+    private Integer dlqTopicPartitions;
+
+    @Value(value = "${spring.kafka.topics.execution-retries}")
+    private Long executionRetries;
+
+    @Value(value = "${spring.kafka.topics.interval-retries}")
+    private Long intervalRetries;
+
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -40,9 +57,18 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(KafkaTemplate<String, String> kafkaTemplate) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                kafkaTemplate,
+                (rec, ex) -> new TopicPartition(dlqTopicName, rec.partition() % dlqTopicPartitions)
+        );
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer,
+                new FixedBackOff(intervalRetries, executionRetries) 
+        );
+        factory.setCommonErrorHandler(errorHandler);
         return factory;
     }
 

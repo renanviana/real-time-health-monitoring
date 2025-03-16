@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.renz.healthmonitoring.producerdata.usecases.TransferDataFromDeviceToTopicUseCase;
+import com.renz.healthmonitoring.producerdata.usecases.TransferDataToTopicUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HealthMonitoringProducerDataApplication implements CommandLineRunner {
 
-	private final TransferDataFromDeviceToTopicUseCase transferDataFromDeviceToTopicUseCase;
+	private final TransferDataToTopicUseCase transferDataToTopicUseCase;
 	
 	public static void main(String[] args) {
 		SpringApplication.run(HealthMonitoringProducerDataApplication.class, args);
@@ -20,7 +20,7 @@ public class HealthMonitoringProducerDataApplication implements CommandLineRunne
 
 	@Override
 	public void run(String... args) throws Exception {
-		transferDataFromDeviceToTopicUseCase.transferData();
+		transferDataToTopicUseCase.transferData();
 	}
 	
 }

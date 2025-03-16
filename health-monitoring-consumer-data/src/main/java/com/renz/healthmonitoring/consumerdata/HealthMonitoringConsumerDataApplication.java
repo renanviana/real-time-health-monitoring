@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 
-import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabaseUseCase;
+import com.renz.healthmonitoring.consumerdata.usecases.TransferDataToDatabaseUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HealthMonitoringConsumerDataApplication implements CommandLineRunner {
 
-	private final TransferDataFromTopicToDatabaseUseCase transferDataFromTopicToDatabaseUseCase;
+	private final TransferDataToDatabaseUseCase transferDataToDatabaseUseCase;
 
 	public static void main(String[] args) {
 		SpringApplication.run(HealthMonitoringConsumerDataApplication.class, args);
@@ -22,7 +22,7 @@ public class HealthMonitoringConsumerDataApplication implements CommandLineRunne
 
 	@Override
 	public void run(String... args) throws Exception {
-		transferDataFromTopicToDatabaseUseCase.transferData();
+		transferDataToDatabaseUseCase.transferData();
 	}
 
 }

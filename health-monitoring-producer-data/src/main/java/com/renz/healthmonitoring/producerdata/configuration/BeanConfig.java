@@ -14,14 +14,10 @@ import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
 import com.renz.healthmonitoring.producerdata.adapter.messaging.KafkaDeviceCreator;
 import com.renz.healthmonitoring.producerdata.adapter.messaging.KafkaDeviceInformer;
 import com.renz.healthmonitoring.producerdata.adapter.messaging.KafkaDevicePublisher;
-import com.renz.healthmonitoring.producerdata.usecases.CreateDeviceTopicUseCase;
-import com.renz.healthmonitoring.producerdata.usecases.CreateRegisterTopicUseCase;
 import com.renz.healthmonitoring.producerdata.usecases.CreateTopicUseCase;
-import com.renz.healthmonitoring.producerdata.usecases.TransferDataFromDeviceToTopicUseCase;
-import com.renz.healthmonitoring.producerdata.usecases.impl.CreateDeviceTopicUseCaseImpl;
-import com.renz.healthmonitoring.producerdata.usecases.impl.CreateRegisterTopicUseCaseImpl;
+import com.renz.healthmonitoring.producerdata.usecases.TransferDataToTopicUseCase;
 import com.renz.healthmonitoring.producerdata.usecases.impl.CreateTopicUseCaseImpl;
-import com.renz.healthmonitoring.producerdata.usecases.impl.TransferDataFromDeviceToTopicIUseCaseImpl;
+import com.renz.healthmonitoring.producerdata.usecases.impl.TransferDataToTopicUseCaseImpl;
 
 @Configuration
 @DependsOn({
@@ -60,36 +56,16 @@ public class BeanConfig {
 
     @Bean
     @Order(5)
-    public CreateDeviceTopicUseCase createDeviceTopicUseCase(
-            CreateTopicUseCase createTopicUseCase,
-            DevicePublisher devicePublisher,
-            DeviceInformer deviceInformer) {
-        return new CreateDeviceTopicUseCaseImpl(
-                createTopicUseCase,
-                devicePublisher,
-                deviceInformer);
-    }
-
-    @Bean
-    @Order(6)
-    public CreateRegisterTopicUseCase createRegisterTopicUseCase(
-            CreateTopicUseCase createTopicUseCase,
-            DevicePublisher devicePublisher) {
-        return new CreateRegisterTopicUseCaseImpl(
-                createTopicUseCase,
-                devicePublisher);
-    }
-
-    @Bean
-    @Order(7)
-    public TransferDataFromDeviceToTopicUseCase transferDataFromDeviceToTopicUseCase(
+    public TransferDataToTopicUseCase transferDataToTopicUseCase(
             IMqttClient emqxClient,
-            CreateDeviceTopicUseCase createDeviceTopicUseCase,
-            CreateRegisterTopicUseCase createRegisterTopicUseCase) {
-        return new TransferDataFromDeviceToTopicIUseCaseImpl(
+            CreateTopicUseCase createTopicUseCase,
+            DeviceInformer deviceInformer,
+            DevicePublisher devicePublisher) {
+        return new TransferDataToTopicUseCaseImpl(
                 emqxClient,
-                createDeviceTopicUseCase,
-                createRegisterTopicUseCase);
+                createTopicUseCase,
+                deviceInformer,
+                devicePublisher);
     }
 
 }

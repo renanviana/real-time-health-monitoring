@@ -6,34 +6,41 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceInformer;
 import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
-import com.renz.healthmonitoring.consumerdata.usecases.TransferDataFromTopicToDatabaseUseCase;
+import com.renz.healthmonitoring.consumerdata.usecases.TransferDataToDatabaseUseCase;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class TransferDataFromTopicToDatabaseUseCaseImpl implements TransferDataFromTopicToDatabaseUseCase {
+public class TransferDataToDatabaseUseCaseImpl implements TransferDataToDatabaseUseCase {
 
     private final DeviceConsumer deviceConsumer;
     private final RegistryRepository registryRepository;
     private final DeviceInformer deviceInformer;
     private final SaveDeviceUseCase saveDeviceUseCase;
 
-    private static final String DEVICE_TOPIC_NAME = "devices";
+    @Value("${spring.kafka.topics.devices.name}")
+    private String devicesTopicName;
+
+    @Value("${spring.kafka.topics.dlq.name}")
+    private String dlqTopicName;
+    
     private Set<String> knownTopics = new HashSet<>();
 
     @Override
     public void transferData() {
-        deviceConsumer.consume(DEVICE_TOPIC_NAME, (key, message) -> {
+        deviceConsumer.consume(devicesTopicName, (key, message) -> {
             saveDeviceUseCase.saveIfAbsent(new Device(key, message));
-            log.info("Insert on Table: {} | key: {} | value: {}", DEVICE_TOPIC_NAME, key, message);
+            log.info("Insert on Table: {} | key: {} | value: {}", devicesTopicName, key, message);
         });
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(this::checkForNewTopics, 0, 10, TimeUnit.SECONDS);
@@ -42,7 +49,8 @@ public class TransferDataFromTopicToDatabaseUseCaseImpl implements TransferDataF
     private void checkForNewTopics() {
         try {
             Set<String> currentTopics = deviceInformer.getTopicNames();
-            currentTopics.removeIf(topic -> DEVICE_TOPIC_NAME.equals(topic));
+            currentTopics.removeIf(topic -> 
+                devicesTopicName.equals(topic) || dlqTopicName.equals(topic));
             Set<String> newTopics = new HashSet<>(currentTopics);
             newTopics.removeAll(knownTopics);
             if (!newTopics.isEmpty()) {
