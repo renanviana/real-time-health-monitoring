@@ -1,5 +1,7 @@
 package com.renz.healthmonitoring.consumerdata.adapter.persistence;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
@@ -12,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 public class CassandraRegistryRepositoryLegacy implements RegistryRepository {
 
     private final CqlSession cqlSession;
+
+    @Value("${spring.data.cassandra.keyspace-name}")
+    private String keyspace;
 
     @Override
     public void save(Registry registry) {
@@ -26,11 +31,17 @@ public class CassandraRegistryRepositoryLegacy implements RegistryRepository {
 
     @Override
     public void createTable(String topicName) {
-        String tableName = topicName.replace("-", "_");
-        this.cqlSession.execute(String.format(
-                "CREATE TABLE IF NOT EXISTS t_%s (uuid TEXT PRIMARY KEY, data TEXT, timestamp TIMESTAMP)",
-                tableName));
-        log.info("Created table : t_{}", tableName);
+        String tableName = "t_" + topicName.replace("-", "_");
+        boolean tableExists = this.cqlSession.getMetadata()
+                .getKeyspace(keyspace)
+                .flatMap(ks -> ks.getTable(tableName))
+                .isPresent();
+        if (!tableExists) {
+            this.cqlSession.execute(String.format(
+                    "CREATE TABLE IF NOT EXISTS %s (uuid TEXT PRIMARY KEY, data TEXT, timestamp TIMESTAMP)",
+                    tableName));
+            log.info("Created table : {}", tableName);
+        }
     }
 
 }

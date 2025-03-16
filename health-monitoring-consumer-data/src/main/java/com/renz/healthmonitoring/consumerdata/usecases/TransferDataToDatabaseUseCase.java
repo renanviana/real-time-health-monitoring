@@ -1,6 +1,6 @@
 package com.renz.healthmonitoring.consumerdata.usecases;
 
-public interface TransferDataFromTopicToDatabaseUseCase {
+public interface TransferDataToDatabaseUseCase {
     
     void transferData();
 
