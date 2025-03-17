@@ -23,7 +23,8 @@ public class RestRouterConfig {
         return RouterFunctions.route()
                 .GET("/devices", deviceHandler::getDevices)
                 .GET("/devices/{type}", deviceHandler::getDevicesByType)
-                .GET("/devices/{type}/{id}", deviceHandler::getRegistersByTypeAndId)
+                .GET("/stream", deviceHandler::getStreamDataDevices)
+                .GET("/stream/{id}", deviceHandler::getStreamDataByTopic)
                 .build();
     }
 }
