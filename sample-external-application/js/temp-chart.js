@@ -1,6 +1,6 @@
-function ecgChartFactory(deviceId) {
-  const showLastSeconds = 30000;
-  let currentBPM = 80;
+function tempChartFactory(deviceId) {
+  const showLastSeconds = 8000;
+  let lastTimestamp = Date.now();
   let chart = null;
 
   const createChart = () => {
@@ -11,17 +11,23 @@ function ecgChartFactory(deviceId) {
         labels: [],
         datasets: [
           {
-            label: "Eletrocardiograma",
+            label: "Temperatura Corporal (°C)",
             data: [],
-            borderColor: "rgba(75, 192, 192, 1)",
+            borderColor: "rgba(255, 99, 132, 1)",
             borderWidth: 2,
+            tension: 0.3,
             fill: false,
-            pointRadius: 0,
+            pointRadius: 3,
           },
         ],
       },
       options: {
         animation: false,
+        responsive: true,
+        interaction: {
+          mode: "nearest",
+          intersect: false,
+        },
         scales: {
           x: {
             type: "time",
@@ -34,45 +40,40 @@ function ecgChartFactory(deviceId) {
               },
             },
             title: { display: true, text: "HH:mm:ss" },
-            min: () => Date.now() - showLastSeconds,
-            max: () => Date.now(),
+            min: () => lastTimestamp - showLastSeconds,
+            max: () => lastTimestamp,
             ticks: {
               autoSkip: true,
-              maxTicksLimit: 30,
+              maxTicksLimit: 8,
             },
           },
           y: {
-            suggestedMin: 50,
-            suggestedMax: 150,
-            title: { display: true, text: "Sinal ECG" },
+            min: 35,
+            max: 40,
+            title: { display: true, text: "Temperatura (°C)" },
+            ticks: {
+              stepSize: 1,
+              callback: function (value) {
+                return value.toFixed(1);
+              },
+            },
           },
         },
       },
     });
   };
 
-  let toggle = true;
   const updateChart = () => {
     const dataList = streamData[deviceId];
     if (dataList) {
       const data = dataList[dataList.length - 1];
-      currentBPM = data.value;
+      lastTimestamp = data.timestamp * 1000;
+      const newPoint = data.value;
   
-      function generateECGPoint() {
-        const base = (currentBPM / 60) * 100;
-        const noise = Math.random() * 10 - 5;
-        const isPeak = Math.random() < 0.02;
-        const peak = isPeak ? (Math.random() < 0.5 ? 50 : -50) : 0;
-        return base + noise + peak;
-      }
-  
-      const newPoint = generateECGPoint();
-      let now = Date.now();
-  
-      chart.data.labels.push(now);
+      chart.data.labels.push(lastTimestamp);
       chart.data.datasets[0].data.push(newPoint);
   
-      const cutoffTime = now - showLastSeconds;
+      const cutoffTime = lastTimestamp - showLastSeconds;
       const filteredLabels = chart.data.labels.filter(
         (label) => label >= cutoffTime
       );
@@ -84,11 +85,6 @@ function ecgChartFactory(deviceId) {
       chart.data.datasets[0].data = filteredData;
   
       chart.update();
-  
-      if (toggle) {
-        toggle = false;
-        setInterval(updateChart, 100);
-      }
     }
   };
 

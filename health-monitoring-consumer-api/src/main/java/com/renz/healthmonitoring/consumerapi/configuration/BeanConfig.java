@@ -1,5 +1,6 @@
 package com.renz.healthmonitoring.consumerapi.configuration;
 
+import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -10,21 +11,24 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
+import com.renz.healthmonitoring.consumerapi.adapter.DeviceInformer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerapi.adapter.messaging.KafkaDeviceConsumer;
+import com.renz.healthmonitoring.consumerapi.adapter.messaging.KafkaDeviceInformer;
 import com.renz.healthmonitoring.consumerapi.adapter.webflux.WebFluxDeviceHandler;
-import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.CreateKafkaListenersUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByTypeAndIdUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesUseCaseImpl;
+import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.impl.CreateKafkaListenersUseCaseImpl;
 import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesByTypeUseCaseImpl;
-import com.renz.healthmonitoring.consumerapi.usecases.impl.GetRegistersByTypeAndIdUseCaseImpl;
+import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesUseCaseImpl;
 
 @Configuration
 @DependsOn({
         "kafkaListenerEndpointRegistry",
         "kafkaListenerContainerFactory",
-        "messageHandlerMethodFactory"
+        "messageHandlerMethodFactory",
+        "adminClient"
 })
 public class BeanConfig {
 
@@ -42,33 +46,42 @@ public class BeanConfig {
 
     @Bean
     @Order(2)
+    public DeviceInformer deviceInformer(AdminClient adminClient) {
+        return new KafkaDeviceInformer(adminClient);
+    }
+
+    @Bean
+    @Order(3)
     public GetDevicesUseCase getDevicesUseCase(DeviceRepository deviceRepository) {
         return new GetDevicesUseCaseImpl(deviceRepository);
     }
 
     @Bean
-    @Order(3)
+    @Order(4)
     public GetDevicesByTypeUseCase getDevicesByTypeUseCase(DeviceRepository deviceRepository) {
         return new GetDevicesByTypeUseCaseImpl(deviceRepository);
     }
 
     @Bean
-    @Order(4)
-    public GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase(
+    @Order(5)
+    public CreateKafkaListenersUseCase createKafkaListenersUseCase(
+            DeviceInformer deviceInformer,
             DeviceConsumer deviceConsumer) {
-        return new GetRegistersByTypeAndIdUseCaseImpl(deviceConsumer);
+        return new CreateKafkaListenersUseCaseImpl(
+                deviceInformer,
+                deviceConsumer);
     }
 
     @Bean
-    @Order(5)
+    @Order(6)
     public DeviceHandler deviceHandler(
             GetDevicesUseCase getDevicesUseCase,
             GetDevicesByTypeUseCase getDevicesByTypeUseCase,
-            GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase) {
+            CreateKafkaListenersUseCase createKafkaListenersUseCase) {
         return new WebFluxDeviceHandler(
                 getDevicesUseCase,
                 getDevicesByTypeUseCase,
-                getRegistersByTypeAndIdUseCase);
+                createKafkaListenersUseCase);
     }
 
 }

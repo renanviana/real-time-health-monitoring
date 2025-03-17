@@ -10,9 +10,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceResponse;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceTypeResponse;
+import com.renz.healthmonitoring.consumerapi.usecases.CreateKafkaListenersUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
-import com.renz.healthmonitoring.consumerapi.usecases.GetRegistersByTypeAndIdUseCase;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -23,7 +23,7 @@ public class WebFluxDeviceHandler implements DeviceHandler {
 
     private final GetDevicesUseCase getDevicesUseCase;
     private final GetDevicesByTypeUseCase getDevicesByTypeUseCase;
-    private final GetRegistersByTypeAndIdUseCase getRegistersByTypeAndIdUseCase;
+    private final CreateKafkaListenersUseCase createKafkaListenersUseCase;
 
     @Override
     public Mono<ServerResponse> getDevices(ServerRequest request) {
@@ -45,13 +45,24 @@ public class WebFluxDeviceHandler implements DeviceHandler {
     }
 
     @Override
-    public Mono<ServerResponse> getRegistersByTypeAndId(ServerRequest request) {
-        String type = request.pathVariable("type");
-        String id = request.pathVariable("id");
-        Flux<String> results = getRegistersByTypeAndIdUseCase.apply(type, id);
+    public Mono<ServerResponse> getStreamDataDevices(ServerRequest request) {
+        String host = request.headers().host().getHostString();
+        Flux<String> results = createKafkaListenersUseCase.getMessages(host);
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(results, String.class)
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
+
+    @Override
+    public Mono<ServerResponse> getStreamDataByTopic(ServerRequest request) {
+        String host = request.headers().host().getHostString();
+        String topic = request.pathVariable("id");
+        Flux<String> results = createKafkaListenersUseCase.getMessages(host, topic);
+        return ServerResponse.ok()
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .body(results, String.class)
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
 }
