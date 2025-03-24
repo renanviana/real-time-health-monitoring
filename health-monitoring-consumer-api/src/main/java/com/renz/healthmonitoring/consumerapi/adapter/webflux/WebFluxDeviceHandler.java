@@ -46,8 +46,7 @@ public class WebFluxDeviceHandler implements DeviceHandler {
 
     @Override
     public Mono<ServerResponse> getStreamDataDevices(ServerRequest request) {
-        String host = request.headers().host().getHostString();
-        Flux<String> results = createKafkaListenersUseCase.getMessages(host);
+        Flux<String> results = createKafkaListenersUseCase.getMessages();
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(results, String.class)
@@ -56,9 +55,8 @@ public class WebFluxDeviceHandler implements DeviceHandler {
 
     @Override
     public Mono<ServerResponse> getStreamDataByTopic(ServerRequest request) {
-        String host = request.headers().host().getHostString();
         String topic = request.pathVariable("id");
-        Flux<String> results = createKafkaListenersUseCase.getMessages(host, topic);
+        Flux<String> results = createKafkaListenersUseCase.getMessages(topic);
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(results, String.class)

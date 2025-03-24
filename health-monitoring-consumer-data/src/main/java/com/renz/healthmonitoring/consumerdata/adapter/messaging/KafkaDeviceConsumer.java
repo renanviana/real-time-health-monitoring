@@ -1,6 +1,8 @@
 package com.renz.healthmonitoring.consumerdata.adapter.messaging;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,16 +17,28 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceConsumer;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaDeviceConsumer implements DeviceConsumer {
-    
+
     private final ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory;
     private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
     private final DefaultMessageHandlerMethodFactory messageHandlerMethodFactory;
+    private final MeterRegistry meterRegistry;
+
+    private static Counter messageCounter;
+    private static Map<String, Counter> counterMap = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void init() {
+        messageCounter = meterRegistry.counter("kafka_messages_consumed");
+    }
 
     @Value(value = "${spring.kafka.consumer.group-id}")
     private String groupId;
@@ -33,11 +47,12 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
     public void consume(String topic, BiConsumer<String, String> processMessageHandler) {
         String listenerId = "consumerDataListener-" + topic;
         if (kafkaListenerEndpointRegistry.getListenerContainer(listenerId) == null) {
+            counterMap.put(topic, meterRegistry.counter("kafka_topic_" + topic + "_messages_consumed"));
             MethodKafkaListenerEndpoint<String, String> endpoint = new MethodKafkaListenerEndpoint<>();
             endpoint.setId(listenerId);
             endpoint.setGroupId(groupId);
             endpoint.setTopics(topic);
-            endpoint.setBean(new MessageProcessor(processMessageHandler));
+            endpoint.setBean(new MessageProcessor(processMessageHandler, topic));
             endpoint.setMethod(getProcessMethod());
             endpoint.setMessageHandlerMethodFactory(messageHandlerMethodFactory);
             kafkaListenerEndpointRegistry.registerListenerContainer(endpoint, kafkaListenerContainerFactory);
@@ -57,13 +72,26 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
 
     public static class MessageProcessor {
         private final BiConsumer<String, String> messageHandler;
+        private final String topic;
 
-        public MessageProcessor(BiConsumer<String, String> messageHandler) {
+        public MessageProcessor(BiConsumer<String, String> messageHandler, String topic) {
             this.messageHandler = messageHandler;
+            this.topic = topic;
         }
 
         public void processMessage(@Header(KafkaHeaders.RECEIVED_KEY) String key, @Payload String message) {
+            countAllMessages();
+            countTopicMessage(this.topic);
             messageHandler.accept(key, message);
         }
     }
+
+    private static void countAllMessages() {
+        messageCounter.increment();
+    }
+
+    private static void countTopicMessage(String topic) {
+        counterMap.get(topic).increment();
+    }
+
 }

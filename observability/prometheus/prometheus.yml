@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: producer-data
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - health-monitoring-producer-data:8081
+  - job_name: consumer-data
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - health-monitoring-consumer-data:8082
+  - job_name: consumer-api
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - health-monitoring-consumer-api:8080

@@ -3,7 +3,9 @@ package com.renz.healthmonitoring.consumerapi.usecases.impl;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -11,6 +13,9 @@ import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceInformer;
 import com.renz.healthmonitoring.consumerapi.usecases.CreateKafkaListenersUseCase;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -28,16 +33,26 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
 
     private final DeviceInformer deviceInformer;
     private final DeviceConsumer deviceConsumer;
+    private final MeterRegistry meterRegistry;
 
     private Map<String, Sinks.Many<String>> sinkTopicMap = new ConcurrentHashMap<>();
     private Map<String, Sinks.Many<String>> sinkHostMap = new ConcurrentHashMap<>();
     private Map<String, Sinks.Many<String>> sinkHostAndTopicMap = new ConcurrentHashMap<>();
     private Set<String> knownTopics = ConcurrentHashMap.newKeySet();
 
+    private AtomicInteger activeConnections = new AtomicInteger(0);
+
+    @PostConstruct
+    public void init() {
+        Gauge.builder("kafka_stream_data_active_connections", activeConnections, AtomicInteger::get)
+                .register(meterRegistry);
+    }
+
     @Override
-    public Flux<String> getMessages(String host) {
+    public Flux<String> getMessages() {
         checkForNewTopics();
-        return sinkHostMap.computeIfAbsent(host, key -> {
+        String subscribeUUID = UUID.randomUUID().toString();
+        return sinkHostMap.computeIfAbsent(subscribeUUID, key -> {
             Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
             knownTopics.forEach(topic -> {
                 Sinks.Many<String> topicSink = sinkTopicMap.get(topic);
@@ -45,17 +60,20 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
                     topicSink.asFlux().subscribe(newSink::tryEmitNext);
                 }
             });
+            activeConnections.incrementAndGet();
             return newSink;
         }).asFlux()
                 .doFinally(signalType -> {
-                    sinkHostMap.remove(host);
+                    sinkHostMap.remove(subscribeUUID);
+                    activeConnections.decrementAndGet();
                 });
     }
 
     @Override
-    public Flux<String> getMessages(String host, String topic) {
+    public Flux<String> getMessages(String topic) {
         checkForNewTopics();
-        return sinkHostAndTopicMap.computeIfAbsent(host, key -> {
+        String subscribeUUID = UUID.randomUUID().toString();
+        return sinkHostAndTopicMap.computeIfAbsent(subscribeUUID, key -> {
             Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
             Sinks.Many<String> topicSink = sinkTopicMap.get(topic);
             if (topicSink != null) {
@@ -64,7 +82,7 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
             return newSink;
         }).asFlux()
                 .doFinally(signalType -> {
-                    sinkHostAndTopicMap.remove(host);
+                    sinkHostAndTopicMap.remove(subscribeUUID);
                 });
     }
 
