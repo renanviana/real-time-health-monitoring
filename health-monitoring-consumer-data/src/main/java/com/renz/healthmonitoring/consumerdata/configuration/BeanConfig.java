@@ -22,6 +22,8 @@ import com.renz.healthmonitoring.consumerdata.usecases.TransferDataToDatabaseUse
 import com.renz.healthmonitoring.consumerdata.usecases.impl.SaveDeviceUseCaseImpl;
 import com.renz.healthmonitoring.consumerdata.usecases.impl.TransferDataToDatabaseUseCaseImpl;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 @Configuration
 @DependsOn({
         "cassandraConfig",
@@ -36,11 +38,13 @@ public class BeanConfig {
     public DeviceConsumer deviceConsumer(
             ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory,
             KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
-            DefaultMessageHandlerMethodFactory messageHandlerMethodFactory) {
+            DefaultMessageHandlerMethodFactory messageHandlerMethodFactory,
+            MeterRegistry meterRegistry) {
         return new KafkaDeviceConsumer(
                 kafkaListenerContainerFactory,
                 kafkaListenerEndpointRegistry,
-                messageHandlerMethodFactory);
+                messageHandlerMethodFactory,
+                meterRegistry);
     }
 
     @Bean

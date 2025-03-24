@@ -19,6 +19,8 @@ import com.renz.healthmonitoring.producerdata.usecases.TransferDataToTopicUseCas
 import com.renz.healthmonitoring.producerdata.usecases.impl.CreateTopicUseCaseImpl;
 import com.renz.healthmonitoring.producerdata.usecases.impl.TransferDataToTopicUseCaseImpl;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 @Configuration
 @DependsOn({
         "emqxClient",
@@ -28,8 +30,12 @@ public class BeanConfig {
 
     @Bean
     @Order(1)
-    public DevicePublisher devicePublisher(KafkaTemplate<String, String> kafkaTemplate) {
-        return new KafkaDevicePublisher(kafkaTemplate);
+    public DevicePublisher devicePublisher(
+            KafkaTemplate<String, String> kafkaTemplate,
+            MeterRegistry meterRegistry) {
+        return new KafkaDevicePublisher(
+                kafkaTemplate,
+                meterRegistry);
     }
 
     @Bean

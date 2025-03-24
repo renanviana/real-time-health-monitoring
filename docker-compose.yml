@@ -76,57 +76,89 @@ services:
       start_period: 30s
     networks:
       - health_monitoring_network
-  iot_devices_simulator:
+  prometheus:
+    depends_on:
+      health-monitoring-consumer-data:
+        condition: service_healthy
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    volumes:
+      - "./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    networks:
+      - health_monitoring_network
+  grafana:
+    depends_on:
+      - prometheus
+    image: grafana/grafana:11.5.2
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - health_monitoring_network
+  iot-devices-simulator:
     build: iot-devices-simulator
     image: iot-devices-simulator:latest
-    container_name: iot_devices_simulator
+    container_name: iot-devices-simulator
     command: uvicorn app:app --host 0.0.0.0 --port 8000
     ports:
       - 8000:8000
     networks:
       - health_monitoring_network
-  health_monitoring_producer_data:
+  health-monitoring-producer-data:
     depends_on:
       - emqx
       - kafka
     build: health-monitoring-producer-data
-    image: health_monitoring_producer_data:latest
+    image: health-monitoring-producer-data:latest
     command: java -Dspring.profiles.active=docker -jar target/health-monitoring-producer-data-0.0.1-SNAPSHOT.jar
-    container_name: health_monitoring_producer_data
+    container_name: health-monitoring-producer-data
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8081/actuator/health"]
       interval: 10s
       retries: 5
       start_period: 10s
       timeout: 5s
+    ports:
+      - 8081:8081
     networks:
       - health_monitoring_network
-  health_monitoring_consumer_data:
+  health-monitoring-consumer-data:
     depends_on:
       cassandra:
         condition: service_healthy
-      health_monitoring_producer_data:
+      health-monitoring-producer-data:
         condition: service_healthy
     build: health-monitoring-consumer-data
-    image: health_monitoring_consumer_data:latest
+    image: health-monitoring-consumer-data:latest
     command: java -Dspring.profiles.active=docker -jar target/health-monitoring-consumer-data-0.0.1-SNAPSHOT.jar
-    container_name: health_monitoring_consumer_data
+    container_name: health-monitoring-consumer-data
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8082/actuator/health"]
       interval: 10s
       retries: 5
       start_period: 10s
       timeout: 5s
+    ports:
+      - 8082:8082
     networks:
       - health_monitoring_network
-  health_monitoring_consumer_api:
+  health-monitoring-consumer-api:
     depends_on:
-      health_monitoring_consumer_data:
+      health-monitoring-consumer-data:
         condition: service_healthy
     build: health-monitoring-consumer-api
-    image: health_monitoring_consumer_api:latest
+    image: health-monitoring-consumer-api:latest
     command: java -Dspring.profiles.active=docker -jar target/health-monitoring-consumer-api-0.0.1-SNAPSHOT.jar
-    container_name: health_monitoring_consumer_api
+    container_name: health-monitoring-consumer-api
     ports:
       - 8080:8080
     networks:

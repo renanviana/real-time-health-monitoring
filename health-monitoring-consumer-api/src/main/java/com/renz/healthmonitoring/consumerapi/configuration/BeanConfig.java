@@ -23,6 +23,8 @@ import com.renz.healthmonitoring.consumerapi.usecases.impl.CreateKafkaListenersU
 import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesByTypeUseCaseImpl;
 import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesUseCaseImpl;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 @Configuration
 @DependsOn({
         "kafkaListenerEndpointRegistry",
@@ -66,10 +68,12 @@ public class BeanConfig {
     @Order(5)
     public CreateKafkaListenersUseCase createKafkaListenersUseCase(
             DeviceInformer deviceInformer,
-            DeviceConsumer deviceConsumer) {
+            DeviceConsumer deviceConsumer,
+            MeterRegistry meterRegistry) {
         return new CreateKafkaListenersUseCaseImpl(
                 deviceInformer,
-                deviceConsumer);
+                deviceConsumer,
+                meterRegistry);
     }
 
     @Bean
