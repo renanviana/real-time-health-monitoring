@@ -11,6 +11,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
+import com.renz.healthmonitoring.consumerapi.configuration.webflux.exception.BadRequestException;
+import com.renz.healthmonitoring.consumerapi.configuration.webflux.exception.NotFoundException;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceResponse;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.DeviceTypeResponse;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.RegistryResponse;
@@ -36,8 +38,7 @@ public class WebFluxDeviceHandler implements DeviceHandler {
         Mono<List<DeviceTypeResponse>> results = getDevicesUseCase.apply();
         return results.flatMap(items -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(items)))
-                .switchIfEmpty(ServerResponse.notFound().build());
+                .body(BodyInserters.fromValue(items)));
     }
 
     @Override
@@ -46,27 +47,24 @@ public class WebFluxDeviceHandler implements DeviceHandler {
         Mono<List<DeviceResponse>> results = getDevicesByTypeUseCase.apply(type);
         return results.flatMap(items -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(items)))
-                .switchIfEmpty(ServerResponse.notFound().build());
+                .body(BodyInserters.fromValue(items)));
     }
 
     @Override
-    public Mono<ServerResponse> getStreamDataDevices(ServerRequest request) {
+    public Mono<ServerResponse> getStreamData(ServerRequest request) {
         Flux<String> results = createKafkaListenersUseCase.getMessages();
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
-                .body(results, String.class)
-                .switchIfEmpty(ServerResponse.notFound().build());
+                .body(results, String.class);
     }
 
     @Override
-    public Mono<ServerResponse> getStreamDataByTopic(ServerRequest request) {
-        String topic = request.pathVariable("id");
+    public Mono<ServerResponse> getStreamDataByTopic(ServerRequest request) throws NotFoundException {
+        String topic = request.pathVariable("uuid");
         Flux<String> results = createKafkaListenersUseCase.getMessages(topic);
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
-                .body(results, String.class)
-                .switchIfEmpty(ServerResponse.notFound().build());
+                .body(results, String.class);
     }
 
     @Override
@@ -76,13 +74,12 @@ public class WebFluxDeviceHandler implements DeviceHandler {
         Optional<String> dateTimeFinal = request.queryParam("dateTimeFinal");
         if (isNotBlank(uuid) && dateTimeInitial.isPresent() && dateTimeFinal.isPresent()) {
             Mono<List<RegistryResponse>> registries = getRegistriesBetweenDateTimeInitialAndDateTimeFinal.apply(uuid,
-            dateTimeInitial.get(), dateTimeFinal.get());
+                    dateTimeInitial.get(), dateTimeFinal.get());
             return registries.flatMap(items -> ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(items)))
-                    .switchIfEmpty(ServerResponse.notFound().build());
+                    .body(BodyInserters.fromValue(items)));
         }
-        throw new RuntimeException("TODO: ERROR");
+        return Mono.error(new BadRequestException("This request needs the parameters: 'dateTimeInitial' and 'dateTimeInitial'"));
     }
 
 }

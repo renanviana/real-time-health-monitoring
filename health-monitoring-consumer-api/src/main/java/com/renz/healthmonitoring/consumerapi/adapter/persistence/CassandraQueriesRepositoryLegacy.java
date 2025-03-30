@@ -8,8 +8,10 @@ import java.util.List;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.renz.healthmonitoring.consumerapi.adapter.RegistryRepository;
+import com.renz.healthmonitoring.consumerapi.configuration.webflux.exception.NotFoundException;
 import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Registry;
 
 import lombok.RequiredArgsConstructor;
@@ -35,16 +37,28 @@ public class CassandraQueriesRepositoryLegacy implements RegistryRepository {
                 .build()
                 .getQuery() + " ALLOW FILTERING";
 
-        return Mono.fromCallable(() -> {
+        List<Registry> registries = new ArrayList<>();
+
+        try {
             ResultSet resultSet = cqlSession.execute(query, timestampInitial, timestampFinal);
-            List<Registry> registries = new ArrayList<>();
+
             for (Row row : resultSet) {
                 Registry registry = new Registry(tableName, row.getString("uuid"), row.getString("data"));
                 registry.setTimestamp(row.getLong("timestamp"));
                 registries.add(registry);
             }
-            return registries;
-        });
+
+            if (registries.isEmpty()) {
+                return Mono.error(new NotFoundException(
+                        "Registries not found for the parameters: '" + dateTimeInitial + "' and '" + dateTimeFinal
+                                + "'"));
+            }
+
+        } catch (InvalidQueryException e) {
+            return Mono.error(new NotFoundException("Device does not exist"));
+        }
+
+        return Mono.fromCallable(() -> registries);
     }
 
     private Long convertToTimestamp(String dateTime) {

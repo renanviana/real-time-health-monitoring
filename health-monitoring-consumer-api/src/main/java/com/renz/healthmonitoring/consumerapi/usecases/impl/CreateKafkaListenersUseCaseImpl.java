@@ -1,11 +1,13 @@
 package com.renz.healthmonitoring.consumerapi.usecases.impl;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -51,6 +53,9 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
     @Override
     public Flux<String> getMessages() {
         checkForNewTopics();
+        if (knownTopics.isEmpty()) {
+            return Flux.empty();
+        }
         String subscribeUUID = UUID.randomUUID().toString();
         return sinkHostMap.computeIfAbsent(subscribeUUID, key -> {
             Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
@@ -62,16 +67,18 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
             });
             activeConnections.incrementAndGet();
             return newSink;
-        }).asFlux()
-                .doFinally(signalType -> {
-                    sinkHostMap.remove(subscribeUUID);
-                    activeConnections.decrementAndGet();
-                });
+        }).asFlux().doFinally(signalType -> {
+            sinkHostMap.remove(subscribeUUID);
+            activeConnections.decrementAndGet();
+        });
     }
 
     @Override
     public Flux<String> getMessages(String topic) {
         checkForNewTopics();
+        if (topicNotExists(topic)) {
+            return Flux.empty();
+        }
         String subscribeUUID = UUID.randomUUID().toString();
         return sinkHostAndTopicMap.computeIfAbsent(subscribeUUID, key -> {
             Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
@@ -80,10 +87,9 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
                 topicSink.asFlux().subscribe(newSink::tryEmitNext);
             }
             return newSink;
-        }).asFlux()
-                .doFinally(signalType -> {
-                    sinkHostAndTopicMap.remove(subscribeUUID);
-                });
+        }).asFlux().doFinally(signalType -> {
+            sinkHostAndTopicMap.remove(subscribeUUID);
+        });
     }
 
     private void checkForNewTopics() {
@@ -110,6 +116,12 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
             }
             return existingSink;
         });
+    }
+
+    private Boolean topicNotExists(String topic) {
+        List<String> knownTopicsFiltered = knownTopics.stream().filter(t -> t.equals(topic))
+                .collect(Collectors.toList());
+        return knownTopicsFiltered.isEmpty();
     }
 
 }
