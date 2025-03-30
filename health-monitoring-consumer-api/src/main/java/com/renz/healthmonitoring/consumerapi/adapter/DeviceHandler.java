@@ -11,7 +11,7 @@ public interface DeviceHandler {
 
     Mono<ServerResponse> getDevicesByType(ServerRequest request);
 
-    Mono<ServerResponse> getStreamDataDevices(ServerRequest request);
+    Mono<ServerResponse> getStreamData(ServerRequest request);
 
     Mono<ServerResponse> getStreamDataByTopic(ServerRequest request);
 
