@@ -14,5 +14,7 @@ public interface DeviceHandler {
     Mono<ServerResponse> getStreamDataDevices(ServerRequest request);
 
     Mono<ServerResponse> getStreamDataByTopic(ServerRequest request);
+
+    Mono<ServerResponse> getRegistriesBetweenDateTimeInitialAndDateTimeFinal(ServerRequest request);
     
 }

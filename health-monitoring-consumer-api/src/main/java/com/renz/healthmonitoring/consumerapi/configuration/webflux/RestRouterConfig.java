@@ -25,6 +25,7 @@ public class RestRouterConfig {
                 .GET("/devices/{type}", deviceHandler::getDevicesByType)
                 .GET("/stream", deviceHandler::getStreamDataDevices)
                 .GET("/stream/{id}", deviceHandler::getStreamDataByTopic)
+                .GET("/registry/{uuid}", deviceHandler::getRegistriesBetweenDateTimeInitialAndDateTimeFinal)
                 .build();
     }
 }

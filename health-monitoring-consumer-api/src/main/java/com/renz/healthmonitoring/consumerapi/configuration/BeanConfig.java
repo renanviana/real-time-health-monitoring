@@ -9,19 +9,24 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceHandler;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceInformer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceRepository;
+import com.renz.healthmonitoring.consumerapi.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerapi.adapter.messaging.KafkaDeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.messaging.KafkaDeviceInformer;
+import com.renz.healthmonitoring.consumerapi.adapter.persistence.CassandraQueriesRepositoryLegacy;
 import com.renz.healthmonitoring.consumerapi.adapter.webflux.WebFluxDeviceHandler;
 import com.renz.healthmonitoring.consumerapi.usecases.CreateKafkaListenersUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesByTypeUseCase;
 import com.renz.healthmonitoring.consumerapi.usecases.GetDevicesUseCase;
+import com.renz.healthmonitoring.consumerapi.usecases.GetRegistriesBetweenDateTimeInitialAndDateTimeFinal;
 import com.renz.healthmonitoring.consumerapi.usecases.impl.CreateKafkaListenersUseCaseImpl;
 import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesByTypeUseCaseImpl;
 import com.renz.healthmonitoring.consumerapi.usecases.impl.GetDevicesUseCaseImpl;
+import com.renz.healthmonitoring.consumerapi.usecases.impl.GetRegistriesBetweenDateTimeInitialAndDateTimeFinalImpl;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -30,7 +35,8 @@ import io.micrometer.core.instrument.MeterRegistry;
         "kafkaListenerEndpointRegistry",
         "kafkaListenerContainerFactory",
         "messageHandlerMethodFactory",
-        "adminClient"
+        "adminClient",
+        "cassandraConfig"
 })
 public class BeanConfig {
 
@@ -78,14 +84,29 @@ public class BeanConfig {
 
     @Bean
     @Order(6)
+    public RegistryRepository registryRepository(CqlSession cqlSession) {
+        return new CassandraQueriesRepositoryLegacy(cqlSession);
+    }
+
+    @Bean
+    @Order(7)
+    public GetRegistriesBetweenDateTimeInitialAndDateTimeFinal getRegistriesBetweenDateTimeInitialAndDateTimeFinal(
+            RegistryRepository registryRepository) {
+        return new GetRegistriesBetweenDateTimeInitialAndDateTimeFinalImpl(registryRepository);
+    }
+
+    @Bean
+    @Order(8)
     public DeviceHandler deviceHandler(
             GetDevicesUseCase getDevicesUseCase,
             GetDevicesByTypeUseCase getDevicesByTypeUseCase,
-            CreateKafkaListenersUseCase createKafkaListenersUseCase) {
+            CreateKafkaListenersUseCase createKafkaListenersUseCase,
+            GetRegistriesBetweenDateTimeInitialAndDateTimeFinal getRegistriesBetweenDateTimeInitialAndDateTimeFinal) {
         return new WebFluxDeviceHandler(
                 getDevicesUseCase,
                 getDevicesByTypeUseCase,
-                createKafkaListenersUseCase);
+                createKafkaListenersUseCase,
+                getRegistriesBetweenDateTimeInitialAndDateTimeFinal);
     }
 
 }

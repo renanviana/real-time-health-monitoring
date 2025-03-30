@@ -32,16 +32,22 @@ public class CassandraRegistryRepositoryLegacy implements RegistryRepository {
     @Override
     public void createTable(String topicName) {
         String tableName = "t_" + topicName.replace("-", "_");
-        boolean tableExists = this.cqlSession.getMetadata()
+        if (notExistsTable(tableName)) {
+            this.cqlSession.execute(String.format(
+                    "CREATE TABLE %s (uuid TEXT PRIMARY KEY, data TEXT, timestamp BIGINT)",
+                    tableName));
+            log.info("Created table : {}", tableName);
+            this.cqlSession.execute(String.format(
+                    "CREATE INDEX IF NOT EXISTS timestamp_idx ON %s (timestamp)", tableName));
+            log.info("Created timestamp_idx index : {}", tableName);
+        }
+    }
+
+    private boolean notExistsTable(String tableName) {
+        return !this.cqlSession.getMetadata()
                 .getKeyspace(keyspace)
                 .flatMap(ks -> ks.getTable(tableName))
                 .isPresent();
-        if (!tableExists) {
-            this.cqlSession.execute(String.format(
-                    "CREATE TABLE IF NOT EXISTS %s (uuid TEXT PRIMARY KEY, data TEXT, timestamp TIMESTAMP)",
-                    tableName));
-            log.info("Created table : {}", tableName);
-        }
     }
 
 }
