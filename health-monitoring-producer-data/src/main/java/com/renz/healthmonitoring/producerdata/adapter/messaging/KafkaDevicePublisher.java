@@ -20,10 +20,11 @@ public class KafkaDevicePublisher implements DevicePublisher {
 
     private Counter messageCounter;
     private Map<String, Counter> counterMap = new ConcurrentHashMap<>();
+    private static final String MESSAGES_PRODUCED_METRIC_NAME = "kafka_messages_produced";
 
     @PostConstruct
     public void init() {
-        messageCounter = meterRegistry.counter("kafka_messages_produced");
+        messageCounter = meterRegistry.counter(MESSAGES_PRODUCED_METRIC_NAME);
     }
 
     @Override

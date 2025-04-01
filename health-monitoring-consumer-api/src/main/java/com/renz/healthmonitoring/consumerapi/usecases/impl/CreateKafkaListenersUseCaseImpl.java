@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceInformer;
+import com.renz.healthmonitoring.consumerapi.helper.PrometheusHelper;
 import com.renz.healthmonitoring.consumerapi.usecases.CreateKafkaListenersUseCase;
 
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -44,11 +44,11 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
 
     private AtomicInteger activeConnections = new AtomicInteger(0);
     private static final int BUFFER_SIZE_SINKS_MANY = 10;
+    private static final String ACTIVE_CONNECTIONS_METRIC_NAME = "kafka_stream_data_active_connections";
 
     @PostConstruct
     public void init() {
-        Gauge.builder("kafka_stream_data_active_connections", activeConnections, AtomicInteger::get)
-                .register(meterRegistry);
+        PrometheusHelper.registerGauge(ACTIVE_CONNECTIONS_METRIC_NAME, activeConnections, meterRegistry);
     }
 
     @Override

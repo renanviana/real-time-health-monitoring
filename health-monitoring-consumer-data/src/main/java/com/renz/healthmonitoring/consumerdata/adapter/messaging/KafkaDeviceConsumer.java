@@ -34,11 +34,12 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
 
     private static Counter messageCounter;
     private static Map<String, Counter> counterMap = new ConcurrentHashMap<>();
-    private String processMessageMethodName = "processMessage";
+    private static final String MESSAGES_CONSUMED_METRIC_NAME = "kafka_messages_consumed";
+    private String processMessageMethodName = "processMessage"; // cannot be a constant because of unit tests
 
     @PostConstruct
     private void init() {
-        messageCounter = meterRegistry.counter("kafka_messages_consumed");
+        messageCounter = meterRegistry.counter(MESSAGES_CONSUMED_METRIC_NAME);
     }
 
     @Value(value = "${spring.kafka.consumer.group-id}")
