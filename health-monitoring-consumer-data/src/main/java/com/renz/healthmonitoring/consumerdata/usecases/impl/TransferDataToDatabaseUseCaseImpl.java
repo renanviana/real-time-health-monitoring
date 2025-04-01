@@ -35,6 +35,9 @@ public class TransferDataToDatabaseUseCaseImpl implements TransferDataToDatabase
     private String dlqTopicName;
     
     private Set<String> knownTopics = new HashSet<>();
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static final int PERIOD = 10;
+    private static final int INITIAL_DELAY = 0;
 
     @Override
     public void transferData() {
@@ -42,8 +45,7 @@ public class TransferDataToDatabaseUseCaseImpl implements TransferDataToDatabase
             saveDeviceUseCase.saveIfAbsent(new Device(key, message));
             log.info("Insert on Table: {} | key: {} | value: {}", devicesTopicName, key, message);
         });
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(this::checkForNewTopics, 0, 10, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::checkForNewTopics, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
     }
 
     private void checkForNewTopics() {

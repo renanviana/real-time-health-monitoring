@@ -34,9 +34,10 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
 
     private static Counter messageCounter;
     private static Map<String, Counter> counterMap = new ConcurrentHashMap<>();
+    private String processMessageMethodName = "processMessage";
 
     @PostConstruct
-    public void init() {
+    private void init() {
         messageCounter = meterRegistry.counter("kafka_messages_consumed");
     }
 
@@ -63,7 +64,7 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
 
     private Method getProcessMethod() {
         try {
-            return MessageProcessor.class.getMethod("processMessage", String.class, String.class);
+            return MessageProcessor.class.getMethod(processMessageMethodName, String.class, String.class);
         } catch (NoSuchMethodException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
