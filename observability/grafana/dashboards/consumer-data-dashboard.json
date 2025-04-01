@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -212,7 +212,7 @@
           "useBackend": false
         }
       ],
-      "title": "Total Mensagens Consumidas Topico: devices",
+      "title": "Total Mensagens Consumidas: devices",
       "type": "timeseries"
     },
     {
@@ -303,13 +303,13 @@
           "expr": "kafka_topic_dead_letter_queue_messages_produced_total",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "__auto",
+          "legendFormat": "{{__name__}}",
           "range": true,
           "refId": "A",
           "useBackend": false
         }
       ],
-      "title": "DQL - Mensagens com erro de processamento",
+      "title": "DLQ - Mensagens com erro de processamento",
       "type": "timeseries"
     }
   ],

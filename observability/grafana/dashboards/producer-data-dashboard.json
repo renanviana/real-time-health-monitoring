@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -212,7 +212,7 @@
           "useBackend": false
         }
       ],
-      "title": "Total Mensagens Produzidas Topico: devices",
+      "title": "Total Mensagens Produzidas: devices",
       "type": "timeseries"
     }
   ],
