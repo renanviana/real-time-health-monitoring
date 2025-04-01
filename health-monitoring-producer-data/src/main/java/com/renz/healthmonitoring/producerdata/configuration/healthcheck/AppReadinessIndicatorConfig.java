@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
         "kafkaAdminConfig",
         "kafkaProducerConfig",
         "emqxConfig",
-        "beanConfig",
         "logConfig" })
 public class AppReadinessIndicatorConfig {
 

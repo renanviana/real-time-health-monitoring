@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceInformer;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class TransferDataToDatabaseUseCaseImpl implements TransferDataToDatabaseUseCase {
 

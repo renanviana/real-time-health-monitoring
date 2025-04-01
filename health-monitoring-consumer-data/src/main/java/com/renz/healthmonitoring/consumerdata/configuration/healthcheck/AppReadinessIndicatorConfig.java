@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
         "kafkaAdminConfig",
         "kafkaConsumerConfig",
         "cassandraConfig",
-        "logConfig",
-        "beanConfig" })
+        "logConfig" })
 public class AppReadinessIndicatorConfig {
 
     private boolean ready = false;

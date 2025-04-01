@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.renz.healthmonitoring.producerdata.adapter.DeviceInformer;
 import com.renz.healthmonitoring.producerdata.adapter.DevicePublisher;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class TransferDataToTopicUseCaseImpl implements TransferDataToTopicUseCase {
 

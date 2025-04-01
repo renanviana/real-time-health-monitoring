@@ -1,6 +1,7 @@
 package com.renz.healthmonitoring.consumerdata.adapter.persistence;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Repository
 @RequiredArgsConstructor
 public class CassandraRegistryRepositoryLegacy implements RegistryRepository {
 
