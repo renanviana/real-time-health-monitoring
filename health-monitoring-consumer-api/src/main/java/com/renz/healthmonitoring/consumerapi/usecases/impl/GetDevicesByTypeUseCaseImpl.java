@@ -2,6 +2,8 @@ package com.renz.healthmonitoring.consumerapi.usecases.impl;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerapi.configuration.webflux.exception.NotFoundException;
 import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Device;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Service
 @RequiredArgsConstructor
 public class GetDevicesByTypeUseCaseImpl implements GetDevicesByTypeUseCase {
 

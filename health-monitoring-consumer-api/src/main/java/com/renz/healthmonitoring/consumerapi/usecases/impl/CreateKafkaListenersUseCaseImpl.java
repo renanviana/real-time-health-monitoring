@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceConsumer;
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceInformer;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseCase {
 

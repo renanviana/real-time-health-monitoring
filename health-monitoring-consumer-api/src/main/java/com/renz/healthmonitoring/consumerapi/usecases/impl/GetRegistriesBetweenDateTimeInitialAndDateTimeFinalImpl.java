@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 import com.renz.healthmonitoring.consumerapi.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Registry;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.RegistryResponse;
@@ -17,6 +19,7 @@ import com.renz.healthmonitoring.consumerapi.usecases.GetRegistriesBetweenDateTi
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
+@Service
 @RequiredArgsConstructor
 public class GetRegistriesBetweenDateTimeInitialAndDateTimeFinalImpl
         implements GetRegistriesBetweenDateTimeInitialAndDateTimeFinal {

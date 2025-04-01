@@ -1,11 +1,14 @@
 package com.renz.healthmonitoring.producerdata.usecases.impl;
 
+import org.springframework.stereotype.Service;
+
 import com.renz.healthmonitoring.producerdata.adapter.DeviceCreator;
 import com.renz.healthmonitoring.producerdata.adapter.DeviceInformer;
 import com.renz.healthmonitoring.producerdata.usecases.CreateTopicUseCase;
 
 import lombok.RequiredArgsConstructor;
 
+@Service
 @RequiredArgsConstructor
 public class CreateTopicUseCaseImpl implements CreateTopicUseCase {
 

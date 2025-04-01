@@ -1,5 +1,7 @@
 package com.renz.healthmonitoring.consumerdata.usecases.impl;
 
+import org.springframework.stereotype.Service;
+
 import com.renz.healthmonitoring.consumerdata.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
@@ -8,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class SaveDeviceUseCaseImpl implements SaveDeviceUseCase {
     

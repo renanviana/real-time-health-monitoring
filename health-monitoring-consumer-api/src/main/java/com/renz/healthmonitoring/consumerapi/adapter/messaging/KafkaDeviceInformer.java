@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.kafka.clients.admin.AdminClient;
+import org.springframework.stereotype.Component;
 
 import com.renz.healthmonitoring.consumerapi.adapter.DeviceInformer;
 
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class KafkaDeviceInformer implements DeviceInformer {
 
