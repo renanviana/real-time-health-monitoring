@@ -116,6 +116,7 @@
 				<configuration>
 					<excludes>
 						<exclude>**/com/renz/healthmonitoring/consumerdata/configuration/**</exclude>
+						<exclude>**/com/renz/healthmonitoring/consumerdata/domain/**</exclude>
 						<exclude>**/HealthMonitoringConsumerDataApplication.class</exclude>
 					</excludes>
 				</configuration>

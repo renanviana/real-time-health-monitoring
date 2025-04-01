@@ -27,7 +27,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
 
 @ExtendWith(MockitoExtension.class)
-class CassandraRegistryRepositoryLegacyTest {
+public class CassandraRegistryRepositoryLegacyTest {
 
     @Mock(lenient = true)
     private CqlSession cqlSession;
@@ -42,20 +42,20 @@ class CassandraRegistryRepositoryLegacyTest {
     private CassandraRegistryRepositoryLegacy repository;
 
     @BeforeEach
-    void setup() {
+    public void setup() {
         ReflectionTestUtils.setField(repository, "keyspace", "test_keyspace");
         lenient().when(cqlSession.getMetadata()).thenReturn(metadata);
     }
 
     @Test
-    void shouldExecuteInsertStatement() {
+    public void shouldExecuteInsertStatement() {
         Registry registry = new Registry("table", "uuid", "data");
         repository.save(registry);
         verify(cqlSession).execute(anyString(), eq("uuid"), eq("data"), anyLong());
     }
 
     @Test
-    void shouldCreateTableWhenNotExists() {
+    public void shouldCreateTableWhenNotExists() {
         String tableName = "t_test_topic";
         when(metadata.getKeyspace("test_keyspace")).thenReturn(Optional.of(keyspaceMetadata));
         when(keyspaceMetadata.getTable(tableName)).thenReturn(Optional.empty());
@@ -65,7 +65,7 @@ class CassandraRegistryRepositoryLegacyTest {
     }
 
     @Test
-    void shouldNotCreateTableWhenExists() {
+    public void shouldNotCreateTableWhenExists() {
         String tableName = "t_existing";
         when(metadata.getKeyspace("test_keyspace")).thenReturn(Optional.of(keyspaceMetadata));
         when(keyspaceMetadata.getTable(tableName)).thenReturn(Optional.of(mock(TableMetadata.class)));

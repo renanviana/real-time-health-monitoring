@@ -29,10 +29,11 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
     @Value(value = "${spring.kafka.consumer.group-id}")
     private String groupId;
 
+    private String processMessageMethodName = "processMessage"; // cannot be a constant because of unit tests
+
     public void createListener(String topic, Consumer<String> processMessageHandler) {
         String listenerId = "consumerApiListener-" + topic;
-        MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(listenerId);
-        if (container == null) {
+        if (kafkaListenerEndpointRegistry.getListenerContainer(listenerId) == null) {
             MethodKafkaListenerEndpoint<String, String> endpoint = new MethodKafkaListenerEndpoint<>();
             endpoint.setId(listenerId);
             endpoint.setGroupId(groupId);
@@ -41,13 +42,14 @@ public class KafkaDeviceConsumer implements DeviceConsumer {
             endpoint.setMethod(getProcessMethod());
             endpoint.setMessageHandlerMethodFactory(messageHandlerMethodFactory);
             kafkaListenerEndpointRegistry.registerListenerContainer(endpoint, kafkaListenerContainerFactory);
-            kafkaListenerEndpointRegistry.getListenerContainer(listenerId).start();
+            MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(listenerId);
+            container.start();
         }
     }
 
     private Method getProcessMethod() {
         try {
-            return MessageProcessor.class.getMethod("processMessage", String.class, String.class);
+            return MessageProcessor.class.getMethod(processMessageMethodName, String.class, String.class);
         } catch (NoSuchMethodException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);

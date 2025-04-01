@@ -1,4 +1,4 @@
-package com.renz.healthmonitoring.consumerdata.adapter.messaging;
+package com.renz.healthmonitoring.consumerapi.adapter.messaging;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,7 +34,7 @@ public class KafkaDeviceInformerTest {
     private KafkaDeviceInformer kafkaDeviceInformer;
 
     @Test
-    public void shouldReturnTopicNamesSuccessfully() throws Exception {
+    void shouldReturnTopicNamesSuccessfully() throws Exception {
         Set<String> topics = Set.of("topic1", "topic2");
         when(adminClient.listTopics()).thenReturn(listTopicsResult);
         when(listTopicsResult.names()).thenReturn(kafkaFuture);
@@ -45,7 +45,7 @@ public class KafkaDeviceInformerTest {
     }
 
     @Test
-    public void shouldReturnEmptySetWhenExceptionOccurs() throws Exception {
+    void shouldReturnEmptySetWhenExceptionOccurs() throws Exception {
         when(adminClient.listTopics()).thenReturn(listTopicsResult);
         when(listTopicsResult.names()).thenReturn(kafkaFuture);
         when(kafkaFuture.get()).thenThrow(new ExecutionException("Error", new RuntimeException()));
