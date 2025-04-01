@@ -43,6 +43,7 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
     private Set<String> knownTopics = ConcurrentHashMap.newKeySet();
 
     private AtomicInteger activeConnections = new AtomicInteger(0);
+    private static final int BUFFER_SIZE_SINKS_MANY = 10;
 
     @PostConstruct
     public void init() {
@@ -58,7 +59,7 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
         }
         String subscribeUUID = UUID.randomUUID().toString();
         return sinkHostMap.computeIfAbsent(subscribeUUID, key -> {
-            Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
+            Sinks.Many<String> newSink = createSinksMany();
             knownTopics.forEach(topic -> {
                 Sinks.Many<String> topicSink = sinkTopicMap.get(topic);
                 if (topicSink != null) {
@@ -81,7 +82,7 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
         }
         String subscribeUUID = UUID.randomUUID().toString();
         return sinkHostAndTopicMap.computeIfAbsent(subscribeUUID, key -> {
-            Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
+            Sinks.Many<String> newSink = createSinksMany();
             Sinks.Many<String> topicSink = sinkTopicMap.get(topic);
             if (topicSink != null) {
                 topicSink.asFlux().subscribe(newSink::tryEmitNext);
@@ -110,7 +111,7 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
     private void onNewListenerCreated(String topic) {
         sinkTopicMap.compute(topic, (key, existingSink) -> {
             if (existingSink == null) {
-                Sinks.Many<String> newSink = Sinks.many().multicast().onBackpressureBuffer(10, false);
+                Sinks.Many<String> newSink = createSinksMany();
                 deviceConsumer.createListener(topic, (message) -> newSink.tryEmitNext(message));
                 return newSink;
             }
@@ -122,6 +123,10 @@ public class CreateKafkaListenersUseCaseImpl implements CreateKafkaListenersUseC
         List<String> knownTopicsFiltered = knownTopics.stream().filter(t -> t.equals(topic))
                 .collect(Collectors.toList());
         return knownTopicsFiltered.isEmpty();
+    }
+
+    private Sinks.Many<String> createSinksMany() {
+        return Sinks.many().multicast().onBackpressureBuffer(BUFFER_SIZE_SINKS_MANY, false);
     }
 
 }
