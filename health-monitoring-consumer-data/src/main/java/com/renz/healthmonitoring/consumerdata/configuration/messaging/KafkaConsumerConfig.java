@@ -20,6 +20,9 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.util.backoff.FixedBackOff;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+
 @EnableKafka
 @Configuration
 public class KafkaConsumerConfig {
@@ -45,6 +48,8 @@ public class KafkaConsumerConfig {
     @Value(value = "${spring.kafka.topics.interval-retries}")
     private Long intervalRetries;
 
+    private Counter messageCounter;
+
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -57,17 +62,22 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(KafkaTemplate<String, String> kafkaTemplate) {
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+            KafkaTemplate<String, String> kafkaTemplate, MeterRegistry meterRegistry) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
-                (rec, ex) -> new TopicPartition(dlqTopicName, rec.partition() % dlqTopicPartitions)
-        );
+                (rec, ex) -> {
+                    if (this.messageCounter == null) {
+                        this.messageCounter = meterRegistry.counter("kafka_topic_" + dlqTopicName + "_messages_produced");
+                    }
+                    this.messageCounter.increment();
+                    return new TopicPartition(dlqTopicName, rec.partition() % dlqTopicPartitions);
+                });
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
                 recoverer,
-                new FixedBackOff(intervalRetries, executionRetries) 
-        );
+                new FixedBackOff(intervalRetries, executionRetries));
         factory.setCommonErrorHandler(errorHandler);
         return factory;
     }
