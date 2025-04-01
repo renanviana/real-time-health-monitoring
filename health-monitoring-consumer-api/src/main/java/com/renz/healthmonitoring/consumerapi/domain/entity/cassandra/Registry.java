@@ -1,5 +1,7 @@
 package com.renz.healthmonitoring.consumerapi.domain.entity.cassandra;
 
+import com.renz.healthmonitoring.consumerapi.helper.TableNameHelper;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +13,7 @@ public class Registry extends CassandraEntityLegacy {
     private Long timestamp;
 
     public Registry(String tableName, String uuid, String data) {
-        super("t_".concat(tableName).replace("-", "_"), uuid);
+        super(TableNameHelper.buildTableName(tableName), uuid);
         this.data = data;
     }
 

@@ -12,6 +12,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.renz.healthmonitoring.consumerapi.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerapi.configuration.webflux.exception.NotFoundException;
+import com.renz.healthmonitoring.consumerapi.configuration.webflux.exception.UnprocessableEntityException;
 import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Registry;
 
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,16 @@ public class CassandraQueriesRepositoryLegacy implements RegistryRepository {
     @Override
     public Mono<List<Registry>> getBetweenDateInitalAndDateFinal(String tableName, String dateTimeInitial,
             String dateTimeFinal) {
-        Long timestampInitial = convertToTimestamp(dateTimeInitial);
-        Long timestampFinal = convertToTimestamp(dateTimeFinal);
+
+        Long timestampInitial = null;
+        Long timestampFinal = null;
+        try {
+            timestampInitial = convertToTimestamp(dateTimeInitial);
+            timestampFinal = convertToTimestamp(dateTimeFinal);
+        } catch (ParseException e) {
+            return Mono.error(new UnprocessableEntityException(
+                    "Date Time invalid format. | [yyyy-MM-dd'T'HH:mm:ss] Sample: 2025-01-01T12:00:00"));
+        }
 
         String query = QueryBuilder.selectFrom(tableName)
                 .all()
@@ -61,12 +70,12 @@ public class CassandraQueriesRepositoryLegacy implements RegistryRepository {
         return Mono.fromCallable(() -> registries);
     }
 
-    private Long convertToTimestamp(String dateTime) {
+    private Long convertToTimestamp(String dateTime) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         try {
             return dateFormat.parse(dateTime).getTime();
         } catch (ParseException e) {
-            throw new RuntimeException("TODO: ERROR");
+            throw e;
         }
     }
 

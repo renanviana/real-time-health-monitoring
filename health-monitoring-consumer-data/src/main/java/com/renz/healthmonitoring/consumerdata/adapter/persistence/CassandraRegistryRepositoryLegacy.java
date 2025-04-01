@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.renz.healthmonitoring.consumerdata.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Registry;
+import com.renz.healthmonitoring.consumerdata.helper.TableNameHelper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class CassandraRegistryRepositoryLegacy implements RegistryRepository {
 
     @Override
     public void createTable(String topicName) {
-        String tableName = "t_" + topicName.replace("-", "_");
+        String tableName = TableNameHelper.buildTableName(topicName);
         if (notExistsTable(tableName)) {
             this.cqlSession.execute(String.format(
                     "CREATE TABLE %s (uuid TEXT PRIMARY KEY, data TEXT, timestamp BIGINT)",

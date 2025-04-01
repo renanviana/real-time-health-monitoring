@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.renz.healthmonitoring.consumerapi.adapter.RegistryRepository;
 import com.renz.healthmonitoring.consumerapi.domain.entity.cassandra.Registry;
 import com.renz.healthmonitoring.consumerapi.domain.response.webflux.RegistryResponse;
+import com.renz.healthmonitoring.consumerapi.helper.TableNameHelper;
 import com.renz.healthmonitoring.consumerapi.usecases.GetRegistriesBetweenDateTimeInitialAndDateTimeFinal;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class GetRegistriesBetweenDateTimeInitialAndDateTimeFinalImpl
 
     @Override
     public Mono<List<RegistryResponse>> apply(String uuid, String dateTimeInitial, String dateTimeFinal) {
-        String tableName = "t_" + uuid.toString().replaceAll("-", "_");
+        String tableName = TableNameHelper.buildTableName(uuid);
         return convertResponse(
                 registryRepository.getBetweenDateInitalAndDateFinal(tableName, dateTimeInitial, dateTimeFinal));
     }
@@ -45,7 +46,7 @@ public class GetRegistriesBetweenDateTimeInitialAndDateTimeFinalImpl
         return sdf.format(new Date(timestamp));
     }
 
-    public List<RegistryResponse> sortingByDateTime(List<RegistryResponse> registries) {
+    private List<RegistryResponse> sortingByDateTime(List<RegistryResponse> registries) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
         registries.sort(Comparator.comparing(
                 registry -> LocalDateTime.parse(registry.dateTime(), formatter)));
