@@ -38,7 +38,7 @@ import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 import com.renz.healthmonitoring.consumerdata.usecases.SaveDeviceUseCase;
 
 @ExtendWith(MockitoExtension.class)
-class TransferDataToDatabaseUseCaseImplTest {
+public class TransferDataToDatabaseUseCaseImplTest {
 
     @Mock
     private DeviceConsumer deviceConsumer;
@@ -58,7 +58,7 @@ class TransferDataToDatabaseUseCaseImplTest {
     private ScheduledExecutorService scheduler;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         scheduler = mock(ScheduledExecutorService.class);
         ReflectionTestUtils.setField(useCase, "scheduler", scheduler);
         ReflectionTestUtils.setField(useCase, "devicesTopicName", "devices-topic");
@@ -66,12 +66,12 @@ class TransferDataToDatabaseUseCaseImplTest {
     }
 
     @AfterEach
-    void tearDown() {
+    public void tearDown() {
         scheduler.shutdownNow();
     }
 
     @Test
-    void shouldIgnoreKnownTopics() throws Exception {
+    public void shouldIgnoreKnownTopics() throws Exception {
         Set<String> topics = new HashSet<>();
         topics.add("devices-topic");
         topics.add("dlq-topic");
@@ -84,14 +84,14 @@ class TransferDataToDatabaseUseCaseImplTest {
     }
 
     @Test
-    void shouldHandleException() throws Exception {
+    public void shouldHandleException() throws Exception {
         when(deviceInformer.getTopicNames()).thenThrow(new RuntimeException("Error"));
         ReflectionTestUtils.invokeMethod(useCase, "checkForNewTopics");
         verify(deviceInformer).getTopicNames();
     }
 
     @Test
-    void shouldRegisterConsumerAndExecuteLambda() {
+    public void shouldRegisterConsumerAndExecuteLambda() {
         String topic = "new-topic";
         String key = "test-key";
         String value = "test-value";
@@ -108,7 +108,7 @@ class TransferDataToDatabaseUseCaseImplTest {
     }
 
     @Test
-    void shouldRegisterDeviceConsumer() {
+    public void shouldRegisterDeviceConsumer() {
         String key = "device-key";
         String message = "device-message";
         doNothing().when(saveDeviceUseCase).saveIfAbsent(any(Device.class));
@@ -124,7 +124,7 @@ class TransferDataToDatabaseUseCaseImplTest {
     }
 
     @Test
-    void shouldNotProcessWhenNoNewTopics() throws Exception {
+    public void shouldNotProcessWhenNoNewTopics() throws Exception {
         Set<String> currentTopics = new HashSet<>(Arrays.asList("topic1", "topic2"));
         Set<String> knownTopics = new HashSet<>(currentTopics);
         when(deviceInformer.getTopicNames()).thenReturn(currentTopics);

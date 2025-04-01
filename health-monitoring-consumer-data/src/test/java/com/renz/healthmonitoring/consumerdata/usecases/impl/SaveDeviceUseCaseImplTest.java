@@ -19,7 +19,7 @@ import com.renz.healthmonitoring.consumerdata.adapter.DeviceRepository;
 import com.renz.healthmonitoring.consumerdata.domain.entity.cassandra.Device;
 
 @ExtendWith(MockitoExtension.class)
-class SaveDeviceUseCaseImplTest {
+public class SaveDeviceUseCaseImplTest {
 
     @Mock
     private DeviceRepository deviceRepository;
@@ -28,7 +28,7 @@ class SaveDeviceUseCaseImplTest {
     private SaveDeviceUseCaseImpl saveDeviceUseCase;
 
     @Test
-    void shouldNotSaveDeviceIfAlreadyExists() {
+    public void shouldNotSaveDeviceIfAlreadyExists() {
         Device device = new Device("123", "TypeX");
         when(deviceRepository.findById("123")).thenReturn(Optional.of(device));
         saveDeviceUseCase.saveIfAbsent(device);
@@ -36,7 +36,7 @@ class SaveDeviceUseCaseImplTest {
     }
 
     @Test
-    void shouldSaveDeviceIfNotExistsAndCleanType() {
+    public void shouldSaveDeviceIfNotExistsAndCleanType() {
         Device device = new Device("123", "\"TypeX\"");
         when(deviceRepository.findById("123")).thenReturn(Optional.empty());
         saveDeviceUseCase.saveIfAbsent(device);
