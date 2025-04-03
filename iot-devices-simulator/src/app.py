@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from simulator import list_devices
 from simulator import publish_new_sensor
 from simulator import stop_thread
-from simulator import stop_all
+from simulator import reactivate_thread
 
 app = FastAPI()
 
@@ -29,11 +29,11 @@ async def post_devices(device: Device):
     return { "device": device }
 
 @app.delete("/simulator-devices/{device_id}")
-async def delete_devices_id(device_id: str):
+async def active_devices_id(device_id: str):
     stop_thread(device_id)
     return { "message": f"Device {device_id} unsubscribed from EMQX" }
 
-@app.delete("/simulator-devices")
-async def delete_devices():
-    stop_all()
-    return { "message": f"Unsubscribed all devices from EMQX" }
+@app.put("/simulator-devices/{device_id}")
+async def reactivate_devices_id(device_id: str):
+    reactivate_thread(device_id)
+    return { "message": f"Device {device_id} reactive on EMQX" }

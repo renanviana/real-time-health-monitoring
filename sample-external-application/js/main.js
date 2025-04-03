@@ -105,7 +105,7 @@ function populateCharts() {
     .then((data) => {
       const devices = data.devices;
       Array.from(devices).forEach((device) => {
-        if (!deviceIdList.includes(device.id)) {
+        if (!deviceIdList.includes(device.id) && device.running) {
           deviceIdList.push(device.id);
           const div = document.createElement("div");
           div.className = "chart-item";
@@ -139,13 +139,18 @@ function populateDeviceTable() {
     .then((data) => {
       const devices = data.devices;
       Array.from(devices).forEach((device) => {
+        const label = device.running ? "Desativar" : "Ativar";
+        const method = device.running ? "deleteDevice" : "activeDevice";
+        const className = device.running ? "btn-excluir" : "btn-ativar";
+        const status = device.running ? "Ativado" : "Desativado";
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${device.id}</td>
             <td>${device.name}</td>
             <td>${device.type}</td>
+            <td>${status}</td>
             <td class="actions">
-                <button class="btn-excluir" onclick="deleteDevice('${device.id}')">Excluir</button>
+                <button class="${className}" onclick="${method}('${device.id}')">${label}</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -162,7 +167,7 @@ function deleteDevice(id) {
       if (!response.ok) {
         throw new Error(`Erro: ${response.status}`);
       }
-      console.log(`Dispositivo ID=${id} deletado com sucesso!`);
+      console.log(`Dispositivo ID=${id} desativado com sucesso!`);
       const index = deviceIdList.indexOf(id);
       if (index !== -1) {
         deviceIdList.splice(index, 1);
@@ -172,7 +177,21 @@ function deleteDevice(id) {
       document.getElementById(`chart-item-${id}`).remove();
       showForm();
     })
-    .catch((error) => console.error(`Erro ao deletar ${id}:`, error));
+    .catch((error) => console.error(`Erro ao desativar ${id}:`, error));
+}
+
+function activeDevice(id) {
+  fetch(`${URL_IOT_DEVICES_SIMULATOR}/${id}`, {
+    method: "PUT",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Erro: ${response.status}`);
+      }
+      console.log(`Dispositivo ID=${id} ativado com sucesso!`);
+      showForm();
+    })
+    .catch((error) => console.error(`Erro ao ativar ${id}:`, error));
 }
 
 function createDevice() {
@@ -209,6 +228,7 @@ function showForm() {
   document.getElementById("deviceForm").style.display = "block";
   document.getElementById("dashboardLink").classList.remove("active");
   document.getElementById("formLink").classList.add("active");
+  populateCharts();
   populateDeviceTable();
 }
 

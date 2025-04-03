@@ -129,7 +129,7 @@ canvas {
 }
 
 .btn-excluir {
-    background-color: #f44336;
+    background-color: #d32f2f;
     color: white;
     font-size: 14px;
     padding: 5px 10px;
@@ -141,6 +141,21 @@ canvas {
 
 .btn-excluir:hover {
     background-color: #d32f2f;
+}
+
+.btn-ativar {
+    background-color: #3ce199;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    max-width: 100px;
+}
+
+.btn-ativar:hover {
+    background-color: #3ce199;
 }
 
 .device-table {

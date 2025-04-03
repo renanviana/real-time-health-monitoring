@@ -79,7 +79,8 @@ def publish_new_sensor(sensor_type):
     device = {
         "id": str(uuid.uuid4()),
         "name": sensor["name"],
-        "type": sensor_type
+        "type": sensor_type,
+        "running": None
     }
     start_thread(device)
     return device
@@ -122,7 +123,7 @@ def generate_device_data(device):
         results[key] = {
             "id": device["id"],
             "name": value["name"],
-            "device_type": device["type"],  # Renomeado para evitar confusão
+            "device_type": device["type"],
             "timestamp": int(time.time()),
             "unit": value["unit"],
             "value": result
@@ -144,6 +145,7 @@ def start_thread(device):
     if running.get(device["id"], False):
         return
     running[device["id"]] = True
+    device["running"] = True
     devices[device["id"]] = device
     thread = threading.Thread(target=publish_data, args=(device,))
     thread.daemon = True
@@ -152,10 +154,11 @@ def start_thread(device):
 def stop_thread(device_id):
     if running.get(device_id):
         running[device_id] = False
-
-def stop_all():
-    for device_id in list(running.keys()):
-        stop_thread(device_id)
+        devices[device_id]["running"] = False
 
 def list_devices():
-    return [devices[device_id] for device_id in running.keys() if running[device_id]]
+    return [devices[device_id] for device_id in running.keys()]
+
+def reactivate_thread(device_id):
+    if not running.get(device_id):
+        start_thread(devices[device_id])
