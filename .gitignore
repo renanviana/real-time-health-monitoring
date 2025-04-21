@@ -5,3 +5,9 @@ health-monitoring-producer-data-tcp*
 health-monitoring-consumer-data-tcp*
 health-monitoring-consumer-api-tcp*
 __pycache__
+.jupyter
+.local
+.ipython
+.ipynb_checkpoints
+.cache
+.config

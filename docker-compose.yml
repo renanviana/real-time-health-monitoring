@@ -72,6 +72,12 @@ services:
       interval: 10s
       retries: 5
       start_period: 30s
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    cap_add:
+      - IPC_LOCK
     networks:
       - health_monitoring_network
   prometheus:
@@ -159,6 +165,18 @@ services:
     container_name: health-monitoring-consumer-api
     ports:
       - 8080:8080
+    networks:
+      - health_monitoring_network
+  jupyter:
+    image: quay.io/jupyter/scipy-notebook:2025-02-12
+    container_name: jupyter
+    command: start-notebook.sh --NotebookApp.token=''
+    ports:
+      - 8888:8888
+    volumes:
+      - ./notebooks:/home/jovyan
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
     networks:
       - health_monitoring_network
 networks:
